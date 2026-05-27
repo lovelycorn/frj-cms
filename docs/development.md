@@ -1,41 +1,95 @@
-# macOS 开发环境文档
+# FRJ CMS 开发文档
 
-适用环境：macOS，Apple Silicon（M2 Pro），16GB RAM / 1TB SSD。
+## 1. 技术栈
 
-## 1. 开发环境边界
+- Frontend: Next.js 15 + TypeScript + TailwindCSS
+- Backend: Strapi v5
+- Database: PostgreSQL 16
+- Runtime: Node.js 20
+- Deploy: Docker Compose
 
-开发环境使用独立文件：
+## 2. 工程结构
 
-- Compose：`docker-compose.dev.yml`
-- 环境变量模板：`.env.development.example`
-- 本机环境变量文件：`.env.development`
+```text
+frj-cms/
+├── frontend/                # Next.js
+├── backend/                 # Strapi
+├── deploy/nginx/            # Nginx 配置模板
+├── docs/                    # 文档入口
+├── scripts/                 # 统一脚本入口
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+├── .env.development.example
+└── .env.production.example
+```
 
-开发服务：
+## 3. Next.js 结构
 
-- `nextjs`：Next.js 开发服务，支持热更新
-- `strapi`：Strapi develop 模式，支持后台调试
-- `postgres`：本地开发数据库
+- `frontend/app/`: 页面与路由（App Router）
+- `frontend/app/api/health/route.ts`: 前端健康检查接口
+- `frontend/components/`: 页面组件
+- `frontend/lib/api.ts`: Strapi 请求封装
+- `frontend/lib/site-config.ts`: 站点配置
+- `frontend/middleware.ts`: i18n 路由处理
 
-开发环境不会使用生产 Compose 和生产环境变量。
+## 4. Strapi 结构
 
-## 2. 本机准备
+- `backend/src/api/`: 内容类型、路由、控制器、服务
+- `backend/config/`: 数据库与服务配置
+- `backend/src/components/`: 复用组件 schema
+- `backend/src/api/health/`: 后端健康检查接口
 
-安装：
+## 5. Docker 结构
 
-- Docker Desktop for Mac（Apple Silicon 版本）
-- Git
+- `docker-compose.dev.yml`: 开发编排
+- `docker-compose.prod.yml`: 生产编排
+- `frontend/Dockerfile*`: Next.js 开发/生产镜像
+- `backend/Dockerfile*`: Strapi 开发/生产镜像
 
-Docker Desktop 建议资源：
+## 6. Nginx 结构
 
-- CPU：4 Core 或以上
-- Memory：8GB 左右
-- Disk：至少 20GB 可用空间
+- `deploy/nginx/frj-cms.conf.example`: 反向代理模板
+- 生产可通过该模板代理到 Next.js 与 Strapi
 
-## 3. 快速启动
+## 7. API 结构
+
+- Strapi API 前缀：`/api/*`
+- 自定义健康接口：`/api/health`
+- 前端通过 `NEXT_PUBLIC_API_URL` 与 `STRAPI_URL` 访问 Strapi
+
+## 8. 页面结构
+
+- `/`: 首页
+- `/about`: 关于页
+- `/products`: 产品列表
+- `/products/[slug]`: 产品详情
+- `/contact`: 联系页
+
+## 9. 数据流
+
+1. 浏览器请求 Next.js 页面。
+2. Next.js server/component 调用 `frontend/lib/api.ts`。
+3. API 请求发往 Strapi（容器内优先 `STRAPI_URL`）。
+4. Strapi 查询 PostgreSQL 返回 JSON。
+5. Next.js 渲染页面并返回给浏览器。
+
+## 10. 环境变量说明
+
+核心变量：
+
+- `SITE_CODE`: 站点代码
+- `APP_URL`: 前端公开地址
+- `NEXT_PUBLIC_API_URL`: 浏览器访问 CMS/API 地址
+- `STRAPI_PUBLIC_URL`: Strapi 对外地址
+- `STRAPI_URL`: Next.js 容器内访问 Strapi 地址
+- `POSTGRES_*` / `DATABASE_*`: 数据库配置
+- `APP_KEYS` 等：Strapi 安全密钥
+
+## 11. 本地开发方式
 
 ```bash
 cp .env.development.example .env.development
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build
+./scripts/dev.sh
 ```
 
 访问：
@@ -43,106 +97,29 @@ docker compose --env-file .env.development -f docker-compose.dev.yml up --build
 - Frontend: `http://localhost:3000`
 - Strapi Admin: `http://localhost:1337/admin`
 
-默认管理员：
+## 12. 构建流程
 
-- Email: `admin@example.com`
-- Password: `Admin123456!`
+开发构建由 `docker-compose.dev.yml` 驱动。
+生产构建由 `docker-compose.prod.yml` 驱动，执行入口为 `./scripts/deploy-prod.sh`。
 
-## 4. 健康检查
+## 13. 部署流程
 
-```bash
-curl -s http://localhost:3000/api/health
-curl -s http://localhost:1337/api/health
-./scripts/smoke-check.sh
-```
+1. 准备 `.env.production`
+2. 执行 `./scripts/deploy-prod.sh`
+3. 查看 `docker compose ... ps`
+4. 查看 `./scripts/logs.sh`
 
-## 5. 常用命令
+## 14. 目录说明
 
-后台启动：
+- `frontend/public/`: 静态资源
+- `backend/public/uploads/`: Strapi 上传目录（生产卷持久化）
+- `scripts/backup.sh`: PostgreSQL 备份
+- `scripts/restore.sh`: PostgreSQL 恢复
+- `scripts/logs.sh`: 统一日志入口
 
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build -d
-```
+## 15. 核心模块说明
 
-查看服务：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml ps
-```
-
-查看日志：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml logs -f nextjs
-docker compose --env-file .env.development -f docker-compose.dev.yml logs -f strapi
-docker compose --env-file .env.development -f docker-compose.dev.yml logs -f postgres
-```
-
-停止服务：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml down
-```
-
-清空开发数据库和缓存卷：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml down -v
-```
-
-## 6. 代码结构
-
-前端核心目录：
-
-- `frontend/app/`：Next.js App Router 页面和 API route
-- `frontend/components/`：通用组件
-- `frontend/lib/api.ts`：Strapi API 封装
-- `frontend/lib/site-config.ts`：多国家站点配置中心
-- `frontend/lib/i18n-routing.ts`：语言路由与路径处理
-- `frontend/middleware.ts`：locale 路由重写与默认语言跳转
-
-后端核心目录：
-
-- `backend/src/api/`：Strapi API 内容类型、controller、service、route
-- `backend/src/components/`：Strapi 组件 schema
-- `backend/config/`：Strapi 数据库、中间件、服务配置
-- `backend/src/index.js`：启动初始化逻辑
-
-## 7. 开发规则
-
-- 开发环境只改 `.env.development`，不要把真实生产密钥写入开发文件。
-- 本地调试优先使用 `docker-compose.dev.yml`，不要使用生产 Compose。
-- 修改依赖后重新执行 `docker compose --env-file .env.development -f docker-compose.dev.yml up --build`。
-- 若页面无数据，先确认 Strapi Public 权限是否开放对应内容类型的 `find/findOne`。
-
-## 8. 开发环境排障
-
-端口被占用：
-
-```bash
-lsof -i :3000
-lsof -i :1337
-lsof -i :5432
-```
-
-可以在 `.env.development` 中调整：
-
-```env
-NEXT_PORT=3001
-STRAPI_PORT=1338
-POSTGRES_PORT=5433
-```
-
-Apple Silicon 镜像构建慢：
-
-```env
-NODE_IMAGE=node:20-alpine
-POSTGRES_IMAGE=postgres:16-alpine
-NPM_REGISTRY=https://registry.npmmirror.com
-```
-
-重建：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build --force-recreate
-```
+- `site-config`: 多站点配置聚合
+- `i18n-routing`: 多语言路径管理
+- `global-setting`: Strapi 全局配置内容类型
+- `product/article/category`: 核心内容模型

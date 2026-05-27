@@ -1,173 +1,74 @@
-# FRJ CMS - 外贸独立站模板（Phase 1）
+# FRJ CMS
 
-面向单站独立部署的外贸官网模板，支持后续平滑演进到多站点与中心化系统。
+面向外贸官网场景的前后端分离工程模板：Next.js 前台 + Strapi CMS + PostgreSQL，基于 Docker Compose 运行。
 
-技术栈：
+## 技术栈
 
-- Next.js 15 (App Router)
-- TypeScript
-- TailwindCSS
+- Next.js 15 + TypeScript + TailwindCSS
 - Strapi v5
-- PostgreSQL
+- PostgreSQL 16
 - Docker Compose
 
-## 当前稳定版本状态（2026-05-27）
+## 系统截图（占位）
 
-本轮已完成“生产测试稳定版”增强：
+- 首页截图：`docs/assets/homepage.png`（待补）
+- CMS 后台截图：`docs/assets/strapi-admin.png`（待补）
 
-- 完成前后端探活接口：
-- Next.js: `/api/health`
-- Strapi: `/api/health`
-- 完成 Docker 生产编排加固：
-- `depends_on` 基于 `service_healthy`
-- `strapi-prod` 增加上传目录持久化 `strapi_uploads`
-- 所有核心服务增加健康检查与日志轮转
-- 完成镜像构建稳定性增强：
-- 前端生产 Dockerfile 使用 `npm ci`
-- 后端生产 Dockerfile 使用 Debian slim Node 镜像，避免 Strapi/SWC native binding 在 Alpine 上构建失败
-- 新增 `frontend/.dockerignore` 与 `backend/.dockerignore`
-- 完成运维脚本：
-- `scripts/smoke-check.sh`
-- `scripts/ops/backup-postgres.sh`
-- `scripts/ops/restore-postgres.sh`
-- 完成开发/生产环境分离：
-- `docker-compose.dev.yml`
-- `docker-compose.prod.yml`
-- `.env.development.example`
-- `.env.production.example`
+## 快速开始
 
-## 文档导航
+```bash
+cp .env.development.example .env.development
+./scripts/dev.sh
+```
 
-- 开发文档：[docs/development.md](docs/development.md)
-- 通用部署文档：[docs/deployment.md](docs/deployment.md)
-- IP+端口一键部署手册：[docs/deployment-ip-ports.md](docs/deployment-ip-ports.md)
-- Ubuntu 24.04 LTS 生产部署手册：[docs/deployment-ubuntu-24.04.md](docs/deployment-ubuntu-24.04.md)
-- CentOS 7.9 历史部署文档（不再推荐新生产环境使用）：[docs/deployment-centos7.md](docs/deployment-centos7.md)
-- 项目计划：[docs/project-plan.md](docs/project-plan.md)
-- 进度说明：[docs/progress.md](docs/progress.md)
+## 一键部署
+
+```bash
+cp .env.production.example .env.production
+# 修改生产密钥后执行
+./scripts/deploy-prod.sh
+```
+
+## 开发指南
+
+详见：[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 
 ## 项目结构
 
 ```text
-frontend/               # Next.js 站点
-backend/                # Strapi CMS
-docs/                   # 项目文档
-scripts/                # 运维与验收脚本
-.env.development.example # macOS 开发环境变量模板
-.env.production.example # 生产环境变量模板
-docker-compose.dev.yml  # macOS 开发环境编排
-docker-compose.prod.yml # Ubuntu 生产环境编排
+frontend/                 # Next.js 应用
+backend/                  # Strapi 应用
+deploy/nginx/             # Nginx 配置模板
+docs/                     # 文档
+scripts/                  # 统一脚本入口
 ```
 
-## 快速启动（开发）
+## 核心模块
 
-适用：macOS M2 Pro / 16GB / 1TB。
+- `frontend/lib/site-config.ts`: 站点配置
+- `frontend/lib/i18n-routing.ts`: 多语言路由
+- `backend/src/api/global-setting`: 全局配置内容类型
+- `backend/src/api/product|article|category`: 内容模型
 
-```bash
-cp .env.development.example .env.development
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build
-```
+## 当前进展
 
-访问：
+- 生产环境可运行（Docker Compose）
+- 部署入口已统一为 `scripts/deploy-prod.sh`
+- 文档体系已收敛为 4 份核心文档
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Strapi Admin: [http://localhost:1337/admin](http://localhost:1337/admin)
+## 下一步计划
 
-## 快速启动（生产测试）
+1. 补充自动化测试（接口 + 页面）
+2. 增加 CI 流程（lint/typecheck/build）
+3. 完善生产备份轮转与告警
 
-推荐生产系统：Ubuntu Server 24.04 LTS x86_64。完整部署流程见 [docs/deployment-ubuntu-24.04.md](docs/deployment-ubuntu-24.04.md)。
+## 文档入口
 
-```bash
-cp .env.production.example .env.production
-# 修改 .env.production 中所有密钥、密码、域名
+- 部署文档：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- 开发文档：[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- 架构文档：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 变更记录：[docs/CHANGELOG.md](docs/CHANGELOG.md)
 
-docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
-```
+## License
 
-访问：
-
-- Frontend: `https://www.example.com`
-- Strapi Admin: `https://cms.example.com/admin`
-
-## 健康检查与验收
-
-服务健康检查接口：
-
-- Next.js: `GET /api/health`
-- Strapi: `GET /api/health`
-
-一键 smoke 检查：
-
-```bash
-./scripts/smoke-check.sh
-```
-
-自定义地址：
-
-```bash
-FRONTEND_URL=http://localhost:3000 STRAPI_URL=http://localhost:1337 ./scripts/smoke-check.sh
-```
-
-## 数据备份与恢复
-
-备份 PostgreSQL：
-
-```bash
-./scripts/ops/backup-postgres.sh
-```
-
-恢复 PostgreSQL：
-
-```bash
-./scripts/ops/restore-postgres.sh ./backups/frjcms-YYYYMMDD-HHMMSS.sql
-```
-
-## 多站点配置
-
-通过 `SITE_CODE` 切换站点基础配置：
-
-```env
-SITE_CODE=us
-```
-
-当前支持：`us / de / jp`
-
-核心文件：
-
-- `frontend/lib/site-config.ts`
-- `frontend/lib/i18n-routing.ts`
-- `frontend/middleware.ts`
-
-## 默认管理员
-
-- Email: `admin@example.com`
-- Password: `Admin123456!`
-
-仅用于首次初始化，生产环境请在 `.env.production` 中替换。
-
-## 安全建议（生产必做）
-
-- 替换所有 Strapi 密钥与默认管理员密码
-- 限制 `5432` 仅内网访问（或不对公网开放）
-- 反向代理接入 HTTPS（Nginx/Caddy）
-- 建立定时备份与异地备份策略
-
-## 常见问题
-
-1. 拉取镜像超时（`auth.docker.io ... i/o timeout`）
-
-在 `.env.development` 或 `.env.production` 里配置：
-
-```env
-NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-bookworm-slim
-NPM_REGISTRY=https://registry.npmmirror.com
-```
-
-2. Strapi 启动报 `getaddrinfo ENOTFOUND postgres`
-
-确认运行命令在项目根目录，并使用 compose 网络：
-
-```bash
-docker compose --env-file .env.development -f docker-compose.dev.yml down --remove-orphans
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build --force-recreate
-```
+Proprietary (internal project).

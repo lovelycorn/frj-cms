@@ -1,166 +1,235 @@
-# 环境与部署入口
+# FRJ CMS 部署手册
 
-本项目已将开发环境和生产环境拆成独立部署文件，避免通过同一个 Compose profile 切换环境。
+本文档对应当前真实工程（`docker-compose.dev.yml` + `docker-compose.prod.yml`），不涉及业务改造。
 
-## 1. 文件边界
+## 1. 系统要求
 
-| 环境 | 机器 | Compose 文件 | 环境变量文件 | 文档 |
-| --- | --- | --- | --- | --- |
-| 开发 | macOS M2 Pro / 16GB / 1TB | `docker-compose.dev.yml` | `.env.development` | [development.md](development.md) |
-| 生产 | Ubuntu Server 24.04 | `docker-compose.prod.yml` | `.env.production` | [deployment-ubuntu-24.04.md](deployment-ubuntu-24.04.md) |
+- CPU: 2 Core+
+- RAM: 4GB+（建议开启 2GB swap）
+- Disk: 40GB+
+- OS: Ubuntu 22.04/24.04（生产推荐）
+- Docker Engine + Docker Compose Plugin
+- Git
 
-模板文件：
+## 2. Ubuntu 环境准备
 
-- `.env.development.example`
-- `.env.production.example`
+```bash
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install -y ca-certificates curl gnupg git openssl ufw
+```
 
-## 2. 开发环境快速启动
+可选 swap（低内存主机建议）：
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+## 3. Docker 安装
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo systemctl enable --now docker
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+## 4. Docker Compose 安装
+
+新版本 Docker 已内置 compose plugin，验证：
+
+```bash
+docker compose version
+```
+
+## 5. Git 安装
+
+```bash
+git --version
+```
+
+如未安装：
+
+```bash
+sudo apt-get install -y git
+```
+
+## 6. 项目初始化
+
+```bash
+git clone <your-repo-url> /opt/frj-cms
+cd /opt/frj-cms
+```
+
+## 7. env 配置
+
+开发环境：
 
 ```bash
 cp .env.development.example .env.development
-docker compose --env-file .env.development -f docker-compose.dev.yml up --build
 ```
 
-访问：
-
-- `http://localhost:3000`
-- `http://localhost:1337/admin`
-
-验证：
-
-```bash
-./scripts/smoke-check.sh
-```
-
-## 3. 生产环境快速部署
-
-推荐生产系统：
-
-**Ubuntu Server 24.04 LTS x86_64**
-
-推荐理由：
-
-- Ubuntu 24.04 LTS 生命周期长，标准安全维护到 2029 年，后续可通过 Ubuntu Pro 延长维护。
-- Docker Engine 官方文档直接支持 Ubuntu 24.04，安装和排障路径清晰。
-- 海外节点使用 Ubuntu + Docker + Nginx + Certbot 的兼容性和资料更好。
-- CentOS 7 已停止维护，不适合作为新生产环境。
-
-生产启动：
+生产环境：
 
 ```bash
 cp .env.production.example .env.production
-# 修改 .env.production 中所有域名、密码、密钥
-docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
 ```
 
-如果出现 Docker 权限错误：
+必须修改生产密钥与密码：
 
-```text
-permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
-```
+- `POSTGRES_PASSWORD`
+- `DATABASE_PASSWORD`
+- `APP_KEYS`
+- `API_TOKEN_SALT`
+- `ADMIN_JWT_SECRET`
+- `TRANSFER_TOKEN_SALT`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `STRAPI_ADMIN_EMAIL`
+- `STRAPI_ADMIN_PASSWORD`
 
-先在服务器执行：
+## 8. 开发环境部署
 
 ```bash
-sudo usermod -aG docker "$USER"
-newgrp docker
-docker ps
+./scripts/dev.sh
 ```
 
-如仍未生效，退出 SSH 后重新登录，再执行生产启动命令。
-
-本机验证：
+或：
 
 ```bash
-curl -s http://127.0.0.1:3000/api/health
-curl -s http://127.0.0.1:1337/api/health
-FRONTEND_URL=http://127.0.0.1:3000 STRAPI_URL=http://127.0.0.1:1337 ./scripts/smoke-check.sh
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build
 ```
 
-生产环境默认只把 `3000`、`1337`、`5432` 绑定到 `127.0.0.1`，公网通过 Nginx 暴露 `80/443`。
+## 9. 生产环境部署
 
-当前如果尚未配置域名，可先使用 IP+端口一键部署方案：
+统一入口：
 
-- 文档：`docs/deployment-ip-ports.md`
-- 入口：`scripts/ops/one-click-prod-ip.sh`
-
-## 4. 生产必改环境变量
-
-```env
-APP_URL=https://www.example.com
-NEXT_PUBLIC_API_URL=https://cms.example.com
-STRAPI_PUBLIC_URL=https://cms.example.com
-STRAPI_URL=http://strapi-prod:1337
-
-POSTGRES_PASSWORD=<强密码>
-DATABASE_PASSWORD=<同 POSTGRES_PASSWORD>
-DATABASE_URL=postgresql://strapi:<强密码>@postgres:5432/frjcms
-
-APP_KEYS=<key1>,<key2>,<key3>,<key4>
-API_TOKEN_SALT=<随机字符串>
-ADMIN_JWT_SECRET=<随机字符串>
-TRANSFER_TOKEN_SALT=<随机字符串>
-JWT_SECRET=<随机字符串>
-ENCRYPTION_KEY=<随机字符串>
-
-STRAPI_ADMIN_EMAIL=<管理员邮箱>
-STRAPI_ADMIN_PASSWORD=<强密码>
+```bash
+./scripts/deploy-prod.sh
 ```
 
-## 5. 运维命令
+脚本自动执行：
 
-生产查看状态：
+- 预检：`docker`、`docker compose`、`git`、端口占用、env 文件
+- `git pull --ff-only`
+- `docker compose build`
+- `docker compose up -d`
+- 输出容器状态和访问地址
+
+## 10. 一键部署方法
+
+```bash
+cd /opt/frj-cms
+./scripts/deploy-prod.sh
+```
+
+## 11. 常用命令
+
+查看状态：
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml ps
 ```
 
-生产查看日志：
+重建并后台启动：
 
 ```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml logs -f nextjs-prod
-docker compose --env-file .env.production -f docker-compose.prod.yml logs -f strapi-prod
-docker compose --env-file .env.production -f docker-compose.prod.yml logs -f postgres
+docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
 ```
 
-生产重启：
-
-```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d
-```
-
-生产停止：
+停止服务：
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml down
 ```
 
-## 6. 数据备份与恢复
+## 12. 日志查看
 
-备份脚本默认使用生产配置：
-
-```bash
-./scripts/ops/backup-postgres.sh
-```
-
-恢复：
+生产日志：
 
 ```bash
-./scripts/ops/restore-postgres.sh ./backups/frjcms-YYYYMMDD-HHMMSS.sql
+./scripts/logs.sh
 ```
 
-如需在开发环境备份，可显式切换：
+指定服务：
 
 ```bash
-COMPOSE_FILE=docker-compose.dev.yml COMPOSE_ENV_FILE=.env.development ./scripts/ops/backup-postgres.sh
+./scripts/logs.sh nextjs-prod
+./scripts/logs.sh strapi-prod
+./scripts/logs.sh postgres
 ```
 
-## 7. Nginx 模板
+开发日志：
 
-生产 Nginx 配置模板：
-
-```text
-deploy/nginx/frj-cms.conf.example
+```bash
+MODE=dev ./scripts/logs.sh
 ```
 
-完整生产部署步骤见 [deployment-ubuntu-24.04.md](deployment-ubuntu-24.04.md)。
+## 13. 容器管理
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml restart nextjs-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml restart strapi-prod
+```
+
+## 14. 数据备份
+
+```bash
+./scripts/backup.sh
+```
+
+自定义目录：
+
+```bash
+./scripts/backup.sh /opt/frj-cms/backups
+```
+
+## 15. 数据恢复
+
+```bash
+./scripts/restore.sh ./backups/frjcms-YYYYMMDD-HHMMSS.sql
+```
+
+## 16. 常见问题
+
+1. `docker compose` 不可用
+
+- 确认 Docker 已正确安装并重登 shell。
+
+2. `permission denied /var/run/docker.sock`
+
+- 当前用户未加入 docker 组：`sudo usermod -aG docker "$USER"` 后重新登录。
+
+3. 部署后无法访问
+
+- 检查 `.env.production` 中 `NEXT_PORT/STRAPI_PORT`。
+- 检查安全组与防火墙放通对应端口。
+
+## 17. 故障排查
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=200 nextjs-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=200 strapi-prod
+curl -s http://127.0.0.1:3000/api/health
+curl -s http://127.0.0.1:1337/api/health
+```
+
+## 18. 升级流程
+
+```bash
+cd /opt/frj-cms
+git pull --ff-only
+./scripts/deploy-prod.sh
+```
+
+建议升级前执行：
+
+```bash
+./scripts/backup.sh
+```
