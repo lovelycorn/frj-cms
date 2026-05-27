@@ -40,6 +40,7 @@
 
 - 开发文档：[docs/development.md](docs/development.md)
 - 通用部署文档：[docs/deployment.md](docs/deployment.md)
+- IP+端口一键部署手册：[docs/deployment-ip-ports.md](docs/deployment-ip-ports.md)
 - Ubuntu 24.04 LTS 生产部署手册：[docs/deployment-ubuntu-24.04.md](docs/deployment-ubuntu-24.04.md)
 - CentOS 7.9 历史部署文档（不再推荐新生产环境使用）：[docs/deployment-centos7.md](docs/deployment-centos7.md)
 - 项目计划：[docs/project-plan.md](docs/project-plan.md)

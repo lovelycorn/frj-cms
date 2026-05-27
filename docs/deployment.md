@@ -79,6 +79,11 @@ FRONTEND_URL=http://127.0.0.1:3000 STRAPI_URL=http://127.0.0.1:1337 ./scripts/sm
 
 生产环境默认只把 `3000`、`1337`、`5432` 绑定到 `127.0.0.1`，公网通过 Nginx 暴露 `80/443`。
 
+当前如果尚未配置域名，可先使用 IP+端口一键部署方案：
+
+- 文档：`docs/deployment-ip-ports.md`
+- 入口：`scripts/ops/one-click-prod-ip.sh`
+
 ## 4. 生产必改环境变量
 
 ```env

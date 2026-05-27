@@ -71,7 +71,7 @@ services:
     volumes:
       - strapi_uploads:/app/public/uploads
     ports:
-      - "${STRAPI_BIND_ADDR:-127.0.0.1}:${STRAPI_PORT:-1337}:1337"
+      - "${STRAPI_BIND_ADDR:-0.0.0.0}:${STRAPI_PORT:-10086}:1337"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:1337/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -102,7 +102,7 @@ services:
       strapi-prod:
         condition: service_healthy
     ports:
-      - "${NEXT_BIND_ADDR:-127.0.0.1}:${NEXT_PORT:-3000}:3000"
+      - "${NEXT_BIND_ADDR:-0.0.0.0}:${NEXT_PORT:-18080}:3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
