@@ -20,6 +20,7 @@
 - 已完成 Docker 开发/生产 Profile 配置
 - 已完成多国家站点配置中心：`frontend/lib/site-config.ts`
 - 已完成 i18n 路由层（`/en`、`/de`、`/ja`）与自动语言前缀跳转
+- 已完成 `site-config` 与 Strapi `Global Settings` 联动（公司名/联系方式可在 CMS 覆盖）
 - 已验证运行：
   - `http://localhost:3000` 前端可访问
   - `http://localhost:1337/admin` Strapi 后台可访问
@@ -76,6 +77,25 @@ SITE_CODE=us
 - 服务区域
 - SEO 默认信息
 - Locale 前缀路由映射（`en/de/ja`）
+
+## CMS 覆盖规则（已打通）
+
+前端默认读取 `site-config`，并在服务端请求时自动合并 Strapi `Global Settings`：
+
+- `companyName`：覆盖页脚公司名
+- `contactInfo`：覆盖联系信息（邮箱/电话/地址/工作时间）
+
+`contactInfo` 推荐两种格式：
+
+1. JSON：
+```json
+{"email":"sales@example.com","phone":"+86 21 5555 8888","address":"Shanghai, China","workingHours":"Mon - Fri, 09:00 - 18:00 (GMT+8)"}
+```
+
+2. 文本键值：
+```text
+Email: sales@example.com | Phone: +86 21 5555 8888 | Address: Shanghai, China | WorkingHours: Mon - Fri, 09:00 - 18:00 (GMT+8)
+```
 
 ## 默认管理员
 

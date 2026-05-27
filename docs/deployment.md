@@ -31,6 +31,7 @@ docker compose --profile dev up --build
 - `http://localhost:3000`
 - `http://localhost:3000/en`（i18n 路由层）
 - `http://localhost:1337/admin`
+- 在 Strapi `Global Settings` 修改 `companyName/contactInfo` 后，前端页脚和联系页可同步生效
 
 ## 4. 生产部署
 

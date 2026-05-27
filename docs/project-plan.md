@@ -30,6 +30,7 @@
 
 - 已完成 `SITE_CODE` 多国家配置中心
 - 已完成 `/en`、`/de`、`/ja` i18n 路由层与默认 locale 跳转
+- 已完成 `site-config` 与 `Global Settings` 的运行时合并策略
 
 ### Phase 3
 

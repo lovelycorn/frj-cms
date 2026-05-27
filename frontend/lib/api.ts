@@ -1,4 +1,4 @@
-import { Article, Category, Product, StrapiImage } from "@/types";
+import { Article, Category, GlobalSettings, Product, StrapiImage } from "@/types";
 
 interface StrapiListResponse<T> {
   data: T[];
@@ -36,6 +36,13 @@ interface RawArticle extends Record<string, unknown> {
   content?: string;
   cover?: unknown;
   seo?: unknown;
+}
+
+interface RawGlobalSettings extends Record<string, unknown> {
+  companyName?: string;
+  logo?: unknown;
+  contactInfo?: string;
+  socialLinks?: unknown;
 }
 
 const FALLBACK_STRAPI_URL = "http://localhost:1337";
@@ -219,6 +226,32 @@ function normalizeArticle(item: StrapiEntity<RawArticle>): Article {
   };
 }
 
+function parseSocialLinks(input: unknown): string[] {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+function normalizeGlobalSettings(entity: StrapiEntity<RawGlobalSettings> | Record<string, unknown>): GlobalSettings | null {
+  const raw =
+    "id" in entity
+      ? unwrapEntity(entity as StrapiEntity<RawGlobalSettings>)
+      : (entity as RawGlobalSettings & { id?: number });
+
+  if (typeof raw.companyName !== "string" || raw.companyName.trim().length === 0) {
+    return null;
+  }
+
+  return {
+    companyName: raw.companyName,
+    logo: parseSingleImage(raw.logo),
+    contactInfo: typeof raw.contactInfo === "string" ? raw.contactInfo : "",
+    socialLinks: parseSocialLinks(raw.socialLinks),
+  };
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
     const response = await fetchFromStrapi<StrapiListResponse<StrapiEntity<RawProduct>>>("/api/products?populate=*");
@@ -263,16 +296,17 @@ export async function getArticles(): Promise<Article[]> {
   }
 }
 
-export async function getGlobalSettings(): Promise<{ companyName: string } | null> {
+export async function getGlobalSettings(): Promise<GlobalSettings | null> {
   try {
-    const response = await fetchFromStrapi<StrapiSingleResponse<Record<string, unknown>>>(
+    const response = await fetchFromStrapi<StrapiSingleResponse<StrapiEntity<RawGlobalSettings> | Record<string, unknown>>>(
       "/api/global-setting?populate=*",
     );
-    if (!response.data || typeof response.data.companyName !== "string") {
+
+    if (!response.data) {
       return null;
     }
 
-    return { companyName: response.data.companyName };
+    return normalizeGlobalSettings(response.data);
   } catch {
     return null;
   }

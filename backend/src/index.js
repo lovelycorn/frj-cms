@@ -136,7 +136,8 @@ async function seedGlobalSettings(strapi) {
   await documentService.create({
     data: {
       companyName: "FRJ Industrial Solutions",
-      contactInfo: "Email: sales@example.com | Phone: +86 21 5555 8888 | Shanghai, China",
+      contactInfo:
+        "Email: sales@example.com | Phone: +86 21 5555 8888 | Address: Shanghai, China | WorkingHours: Mon - Fri, 09:00 - 18:00 (GMT+8)",
       socialLinks: ["https://www.linkedin.com", "https://www.youtube.com"],
     },
   });

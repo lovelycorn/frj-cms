@@ -19,6 +19,8 @@
 - `lib/api.ts`：Strapi API 封装
 - `lib/site-config.ts`：多国家站点配置中心
 - `lib/i18n-routing.ts`：语言路由与路径处理
+- `lib/site-runtime.ts`：`site-config` 与 Strapi `Global Settings` 合并层
+- `lib/request-context.ts`：请求上下文 locale 与配置读取入口
 - `middleware.ts`：locale 路由重写与默认语言跳转
 - `types/`：业务类型定义
 
@@ -40,6 +42,13 @@ i18n 路由规则：
 - 支持路径前缀：`/en`、`/de`、`/ja`
 - 无前缀路径将自动重定向到默认 locale
 - `/_next`、`/api`、`/admin`、`robots/sitemap` 等路径跳过 locale 重写
+
+Global Settings 合并规则：
+
+- 前端始终有 `site-config` 默认值作为兜底
+- 若 Strapi `Global Settings` 存在：
+- `companyName` 覆盖页面公司名展示
+- `contactInfo` 解析后覆盖联系信息字段（支持 JSON 和 `Key: Value` 文本）
 
 ## 3. 后端模块
 
