@@ -19,6 +19,7 @@
 - 已完成 SEO 基础能力：metadata、OpenGraph、sitemap、robots、动态 title/description
 - 已完成 Docker 开发/生产 Profile 配置
 - 已完成多国家站点配置中心：`frontend/lib/site-config.ts`
+- 已完成 i18n 路由层（`/en`、`/de`、`/ja`）与自动语言前缀跳转
 - 已验证运行：
   - `http://localhost:3000` 前端可访问
   - `http://localhost:1337/admin` Strapi 后台可访问
@@ -64,6 +65,8 @@ SITE_CODE=us
 站点配置集中在：
 
 - `frontend/lib/site-config.ts`
+- `frontend/lib/i18n-routing.ts`
+- `frontend/middleware.ts`
 
 可配置项包含：
 
@@ -72,6 +75,7 @@ SITE_CODE=us
 - 联系方式
 - 服务区域
 - SEO 默认信息
+- Locale 前缀路由映射（`en/de/ja`）
 
 ## 默认管理员
 

@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { Product } from "@/types";
+import LocalizedLink from "@/components/LocalizedLink";
 
 interface ProductCardProps {
   product: Product;
@@ -30,12 +29,12 @@ export default function ProductCard({ product }: ProductCardProps): JSX.Element 
         ) : null}
         <h3 className="mt-2 text-lg font-semibold text-brand-950">{product.title}</h3>
         <p className="mt-3 line-clamp-3 text-sm text-slate-600">{product.description}</p>
-        <Link
+        <LocalizedLink
           href={`/products/${product.slug}`}
           className="mt-4 inline-flex items-center text-sm font-semibold text-brand-700 transition hover:text-brand-900"
         >
           View Details
-        </Link>
+        </LocalizedLink>
       </div>
     </article>
   );

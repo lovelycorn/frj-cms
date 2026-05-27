@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { getSiteConfig } from "@/lib/site-config";
+import { getRequestSiteConfig } from "@/lib/request-context";
 
 import "./globals.css";
 
 const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
-export function generateMetadata(): Metadata {
-  const site = getSiteConfig();
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getRequestSiteConfig();
 
   return {
     metadataBase: new URL(appUrl),
@@ -33,14 +33,18 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>): JSX.Element {
-  const site = getSiteConfig();
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>): Promise<JSX.Element> {
+  const site = await getRequestSiteConfig();
 
   return (
     <html lang={site.htmlLang}>
       <body>
         <div className="site-shell">
-          <Header brandShortName={site.brandShortName} brandName={site.brandName} navItems={site.navigation} />
+          <Header
+            brandShortName={site.brandShortName}
+            brandName={site.brandName}
+            navItems={site.navigation}
+          />
           <div className="content-shell">{children}</div>
           <Footer
             companyName={site.companyName}

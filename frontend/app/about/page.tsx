@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { getSiteConfig } from "@/lib/site-config";
+import { getRequestSiteConfig } from "@/lib/request-context";
 
-export function generateMetadata(): Metadata {
-  const site = getSiteConfig();
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getRequestSiteConfig();
 
   return {
     title: `About ${site.brandName}`,
@@ -11,8 +11,8 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default function AboutPage(): JSX.Element {
-  const site = getSiteConfig();
+export default async function AboutPage(): Promise<JSX.Element> {
+  const site = await getRequestSiteConfig();
 
   return (
     <main className="section-wrap py-14">

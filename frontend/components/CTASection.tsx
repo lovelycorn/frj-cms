@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocalizedLink from "@/components/LocalizedLink";
 
 interface CTASectionProps {
   title?: string;
@@ -15,12 +15,12 @@ export default function CTASection({
         <h2 className="text-2xl font-semibold sm:text-3xl">{title}</h2>
         <p className="mt-4 max-w-2xl text-sm text-slate-100 sm:text-base">{description}</p>
         <div className="mt-6">
-          <Link
+          <LocalizedLink
             href="/contact"
             className="inline-flex rounded-md bg-white px-5 py-3 text-sm font-semibold text-brand-900 transition hover:bg-slate-100"
           >
             Contact Sales
-          </Link>
+          </LocalizedLink>
         </div>
       </div>
     </section>

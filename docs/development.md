@@ -18,6 +18,8 @@
 - `components/`：通用组件（Header/Footer/Hero/ProductCard 等）
 - `lib/api.ts`：Strapi API 封装
 - `lib/site-config.ts`：多国家站点配置中心
+- `lib/i18n-routing.ts`：语言路由与路径处理
+- `middleware.ts`：locale 路由重写与默认语言跳转
 - `types/`：业务类型定义
 
 API 方法：
@@ -32,6 +34,12 @@ API 方法：
 - `getSiteConfig`
 - `resolveSiteCode`
 - `getSupportedSiteCodes`
+
+i18n 路由规则：
+
+- 支持路径前缀：`/en`、`/de`、`/ja`
+- 无前缀路径将自动重定向到默认 locale
+- `/_next`、`/api`、`/admin`、`robots/sitemap` 等路径跳过 locale 重写
 
 ## 3. 后端模块
 

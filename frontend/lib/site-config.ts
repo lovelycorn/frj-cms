@@ -37,8 +37,22 @@ export interface SiteConfig {
 }
 
 const supportedSiteCodes = ["us", "de", "jp"] as const;
+const supportedSiteLocales = ["en", "de", "ja"] as const;
 
 export type SiteCode = (typeof supportedSiteCodes)[number];
+export type SiteLocale = (typeof supportedSiteLocales)[number];
+
+const localeToSiteCodeMap: Record<SiteLocale, SiteCode> = {
+  en: "us",
+  de: "de",
+  ja: "jp",
+};
+
+const siteCodeToLocaleMap: Record<SiteCode, SiteLocale> = {
+  us: "en",
+  de: "de",
+  jp: "ja",
+};
 
 const commonNavigation: NavigationItem[] = [
   { href: "/", label: "Home" },
@@ -147,6 +161,7 @@ const siteConfigs: Record<SiteCode, SiteConfig> = {
 };
 
 const defaultSiteCode: SiteCode = "us";
+const defaultLocale: SiteLocale = siteCodeToLocaleMap[defaultSiteCode];
 
 export function resolveSiteCode(code: string | undefined): SiteCode {
   const normalized = code?.trim().toLowerCase();
@@ -157,6 +172,27 @@ export function getSiteConfig(code: string | undefined = process.env.SITE_CODE):
   return siteConfigs[resolveSiteCode(code)];
 }
 
+export function resolveSiteLocale(locale: string | undefined): SiteLocale {
+  const normalized = locale?.trim().toLowerCase();
+  return supportedSiteLocales.includes(normalized as SiteLocale) ? (normalized as SiteLocale) : defaultLocale;
+}
+
+export function getSiteCodeByLocale(locale: string | undefined): SiteCode {
+  return localeToSiteCodeMap[resolveSiteLocale(locale)];
+}
+
+export function getDefaultSiteLocale(): SiteLocale {
+  return siteCodeToLocaleMap[resolveSiteCode(process.env.SITE_CODE)];
+}
+
+export function getSiteConfigByLocale(locale: string | undefined): SiteConfig {
+  return siteConfigs[getSiteCodeByLocale(locale)];
+}
+
 export function getSupportedSiteCodes(): SiteCode[] {
   return [...supportedSiteCodes];
+}
+
+export function getSupportedSiteLocales(): SiteLocale[] {
+  return [...supportedSiteLocales];
 }

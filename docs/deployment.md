@@ -29,6 +29,7 @@ docker compose --profile dev up --build
 验证：
 
 - `http://localhost:3000`
+- `http://localhost:3000/en`（i18n 路由层）
 - `http://localhost:1337/admin`
 
 ## 4. 生产部署
@@ -68,4 +69,3 @@ docker compose --profile dev down --remove-orphans
 docker network rm frj_network 2>/dev/null || true
 docker compose --profile dev up --build --force-recreate
 ```
-

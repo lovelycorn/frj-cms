@@ -14,6 +14,7 @@
 - 完成 Strapi 路由/controller/service 兼容修复
 - 完成 DB DNS 解析问题修复（compose 网络方案）
 - 完成站点配置抽离（`site-config`），支持 `SITE_CODE=us/de/jp`
+- 完成 i18n 路由层：支持 `/en`、`/de`、`/ja` 访问与默认 locale 自动跳转
 
 ## 当前状态
 
@@ -22,6 +23,7 @@
 - `postgres`：运行正常
 - 管理后台：`/admin` 可进入并可编辑内容模型
 - 多国家站点：可通过 `SITE_CODE` 切换品牌与文案基础信息
+- 多语言路由：前端内部跳转会自动保留当前 locale 前缀
 
 ## 风险与待办
 

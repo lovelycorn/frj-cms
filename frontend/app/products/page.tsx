@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import LocalizedLink from "@/components/LocalizedLink";
 import ProductGrid from "@/components/ProductGrid";
 import { getCategories, getProducts } from "@/lib/api";
 
@@ -39,18 +40,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps):
       <p className="section-subtitle">Search by category and discover export-ready industrial solutions.</p>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <a
+        <LocalizedLink
           href="/products"
           className={`rounded-full border px-3 py-1 text-sm transition ${
             category ? "border-slate-300 text-slate-700 hover:border-brand-600" : "border-brand-700 bg-brand-700 text-white"
           }`}
         >
           All
-        </a>
+        </LocalizedLink>
         {categories.map((item) => {
           const isActive = category?.toLowerCase() === item.slug.toLowerCase();
           return (
-            <a
+            <LocalizedLink
               key={item.id}
               href={`/products?category=${encodeURIComponent(item.slug)}`}
               className={`rounded-full border px-3 py-1 text-sm transition ${
@@ -58,7 +59,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps):
               }`}
             >
               {item.name}
-            </a>
+            </LocalizedLink>
           );
         })}
       </div>

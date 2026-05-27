@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import CTASection from "@/components/CTASection";
+import LocalizedLink from "@/components/LocalizedLink";
 import ProductGrid from "@/components/ProductGrid";
 import { getProductBySlug, getProducts } from "@/lib/api";
 
@@ -76,12 +77,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               <p className="mt-2 text-sm text-slate-700">
                 Send your target quantity and destination port to get a focused quotation.
               </p>
-              <a
+              <LocalizedLink
                 href="/contact"
                 className="mt-4 inline-flex rounded-md bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
               >
                 Contact Sales
-              </a>
+              </LocalizedLink>
             </div>
           </div>
         </div>

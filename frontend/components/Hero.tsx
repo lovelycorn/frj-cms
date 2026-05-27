@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import type { SiteHeroContent } from "@/lib/site-config";
+import LocalizedLink from "@/components/LocalizedLink";
 
 interface HeroProps {
   hero: SiteHeroContent;
@@ -22,18 +21,18 @@ export default function Hero({ hero }: HeroProps): JSX.Element {
         <p className="mt-6 max-w-2xl text-base text-slate-100/90 sm:text-lg">{hero.description}</p>
 
         <div className="mt-8 flex flex-wrap gap-4">
-          <Link
+          <LocalizedLink
             href="/products"
             className="rounded-md bg-white px-5 py-3 text-sm font-semibold text-brand-900 shadow-lg transition hover:bg-slate-100"
           >
             {hero.primaryActionLabel}
-          </Link>
-          <Link
+          </LocalizedLink>
+          <LocalizedLink
             href="/contact"
             className="rounded-md border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             {hero.secondaryActionLabel}
-          </Link>
+          </LocalizedLink>
         </div>
       </div>
     </section>

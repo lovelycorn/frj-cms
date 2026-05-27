@@ -2,11 +2,11 @@ import CTASection from "@/components/CTASection";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import { getCategories, getProducts } from "@/lib/api";
-import { getSiteConfig } from "@/lib/site-config";
+import { getRequestSiteConfig } from "@/lib/request-context";
 
 export default async function HomePage(): Promise<JSX.Element> {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);
-  const site = getSiteConfig();
+  const site = await getRequestSiteConfig();
   const hotProducts = products.slice(0, 6);
 
   return (

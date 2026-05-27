@@ -26,6 +26,11 @@
 - CMS Schema 模板化
 - 组件库公共包抽离
 
+当前进展：
+
+- 已完成 `SITE_CODE` 多国家配置中心
+- 已完成 `/en`、`/de`、`/ja` i18n 路由层与默认 locale 跳转
+
 ### Phase 3
 
 - 中央 CMS 聚合

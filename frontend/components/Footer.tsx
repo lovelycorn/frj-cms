@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import type { NavigationItem, SiteContact } from "@/lib/site-config";
+import LocalizedLink from "@/components/LocalizedLink";
 
 interface FooterProps {
   companyName: string;
@@ -26,9 +25,9 @@ export default function Footer({ companyName, footerDescription, contact, servic
           <ul className="mt-3 space-y-2 text-sm text-slate-300">
             {quickLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="hover:text-white">
+                <LocalizedLink href={item.href} className="hover:text-white">
                   {item.label}
-                </Link>
+                </LocalizedLink>
               </li>
             ))}
           </ul>
