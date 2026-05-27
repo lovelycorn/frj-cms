@@ -1,6 +1,13 @@
 # 生产部署信息补充表
 
-这份表用于第 2 步：基于你的真实服务器、域名和账号信息，生成最简单的一键生产部署配置与脚本。
+这份表用于第 2 步：基于你的真实服务器、IP、端口和账号信息，生成最简单的一键生产部署配置与脚本。
+
+当前生产计划先不配置域名和 HTTPS，采用 IP+端口访问：
+
+| 服务 | 外网访问地址 |
+| --- | --- |
+| 官网前端 | `http://165.154.163.41:18080` |
+| Strapi Admin/API | `http://165.154.163.41:10086` |
 
 ## 1. 先在生产服务器生成自动采集报告
 
@@ -9,9 +16,9 @@
 ```bash
 chmod +x scripts/ops/collect-prod-info.sh
 PROJECT_DIR=/opt/frj-cms \
-FRONTEND_DOMAIN=www.example.com \
-ROOT_DOMAIN=example.com \
-CMS_DOMAIN=cms.example.com \
+PUBLIC_IP=165.154.163.41 \
+FRONTEND_PUBLIC_PORT=18080 \
+CMS_PUBLIC_PORT=10086 \
 ./scripts/ops/collect-prod-info.sh
 ```
 
@@ -23,7 +30,7 @@ production-server-report.md
 
 请把 `production-server-report.md` 的内容和下面补完的表格一起发回来。
 
-如果项目还没有放到服务器，也可以先只执行表格部分；我会在第 2 步里把服务器初始化、项目拉取、环境变量生成、Nginx、HTTPS、启动和验收脚本串成傻瓜式流程。
+如果项目还没有放到服务器，也可以先只执行表格部分；我会在第 2 步里把服务器初始化、项目拉取、环境变量生成、Docker 启动和验收脚本串成傻瓜式流程。域名、Nginx、HTTPS 先不做，后续有域名后再补。
 
 ## 2. 你需要补充的信息
 
@@ -35,23 +42,24 @@ production-server-report.md
 | 服务器地区 |  | 例如 Los Angeles |
 | 操作系统 |  | 推荐 Ubuntu Server 24.04 LTS x86_64 |
 | CPU / 内存 / 硬盘 |  | 例如 2C / 4GB / 80GB |
-| 公网 IPv4 |  | 用于核对 DNS A 记录 |
+| 公网 IPv4 | `165.154.163.41` | 外网访问入口 |
 | 是否有 IPv6 |  | 有 / 没有 / 不确定 |
 | SSH 用户名 |  | 例如 root / ubuntu / deploy |
 | SSH 端口 |  | 默认 22；如改过请填写 |
 | 项目部署目录 |  | 推荐 `/opt/frj-cms` |
 | 是否允许使用 `sudo` |  | 是 / 否 |
 
-### 域名与 HTTPS
+### 访问方式
 
 | 项目 | 你填写 | 说明 |
 | --- | --- | --- |
-| 官网主域名 |  | 例如 `www.example.com` |
-| 根域名是否也访问官网 |  | 是 / 否；例如 `example.com` 是否跳到 `www.example.com` |
-| CMS/API 域名 |  | 例如 `cms.example.com` |
-| 域名 DNS 是否已指向服务器 IP |  | 是 / 否 / 不确定 |
-| Certbot 证书邮箱 |  | 用于申请 HTTPS 证书和续期通知 |
-| 是否强制 HTTPS |  | 推荐：是 |
+| 当前访问模式 | `IP+端口` | 暂不配置域名 |
+| 官网外网地址 | `http://165.154.163.41:18080` | 前端访问地址 |
+| Strapi Admin/API 外网地址 | `http://165.154.163.41:10086` | 后台和 API 地址 |
+| 官网域名 | 暂无 | 后续有域名再配置 |
+| CMS/API 域名 | 暂无 | 后续有域名再配置 |
+| 是否配置 HTTPS | 否 | IP+端口模式先走 HTTP |
+| 后续是否计划接入域名 |  | 是 / 否 / 不确定 |
 
 ### 代码仓库
 
@@ -67,9 +75,9 @@ production-server-report.md
 | 项目 | 你填写 | 说明 |
 | --- | --- | --- |
 | `SITE_CODE` |  | 当前支持 `us` / `de` / `jp` |
-| 前端公开地址 `APP_URL` |  | 例如 `https://www.example.com` |
-| Strapi 公开地址 `STRAPI_PUBLIC_URL` |  | 例如 `https://cms.example.com` |
-| 浏览器访问 API 地址 `NEXT_PUBLIC_API_URL` |  | 通常同 `STRAPI_PUBLIC_URL` |
+| 前端公开地址 `APP_URL` | `http://165.154.163.41:18080` | 前端外网地址 |
+| Strapi 公开地址 `STRAPI_PUBLIC_URL` | `http://165.154.163.41:10086` | Strapi 外网地址 |
+| 浏览器访问 API 地址 `NEXT_PUBLIC_API_URL` | `http://165.154.163.41:10086` | 通常同 `STRAPI_PUBLIC_URL` |
 | Strapi 内网地址 `STRAPI_URL` |  | 默认保留 `http://strapi-prod:1337` |
 
 ### 生产账号与密钥
@@ -103,11 +111,14 @@ production-server-report.md
 
 | 项目 | 你填写 | 说明 |
 | --- | --- | --- |
-| 公网开放端口 |  | 推荐只开放 `22`、`80`、`443` |
-| Next.js 本机端口 |  | 默认 `127.0.0.1:3000` |
-| Strapi 本机端口 |  | 默认 `127.0.0.1:1337` |
-| PostgreSQL 本机端口 |  | 默认 `127.0.0.1:5432` |
-| 是否需要公网临时直连测试 3000/1337 |  | 推荐：否 |
+| 公网开放端口 | `18080`、`10086` | 另需 SSH 端口用于登录 |
+| Next.js 外网端口 | `18080` | 生产会映射到容器内 `3000` |
+| Strapi 外网端口 | `10086` | 生产会映射到容器内 `1337` |
+| PostgreSQL 本机端口 | `127.0.0.1:5432` | 数据库不要开放公网 |
+| Next.js 绑定地址 | `0.0.0.0` | 允许外网访问 `18080` |
+| Strapi 绑定地址 | `0.0.0.0` | 允许外网访问 `10086` |
+| PostgreSQL 绑定地址 | `127.0.0.1` | 只允许本机访问 |
+| 是否需要额外开放 3000/1337 | 否 | 当前只使用 `18080`、`10086` |
 
 ### 数据与备份
 
@@ -124,10 +135,11 @@ production-server-report.md
 
 | 项目 | 你填写 | 说明 |
 | --- | --- | --- |
-| 是否允许脚本安装 Docker / Nginx / Certbot |  | 是 / 否 |
+| 是否允许脚本安装 Docker |  | 是 / 否 |
+| 是否安装 Nginx / Certbot | 暂不需要 | IP+端口模式先不使用 |
 | 是否允许脚本配置 UFW 防火墙 |  | 是 / 否 |
-| 是否允许脚本写入 Nginx 站点配置 |  | 是 / 否 |
-| 是否允许脚本申请 HTTPS 证书 |  | 是 / 否 |
+| 是否允许脚本写入 Nginx 站点配置 | 暂不需要 | IP+端口模式先不使用 Nginx |
+| 是否允许脚本申请 HTTPS 证书 | 暂不需要 | 没有域名时先不申请 |
 | 是否允许脚本覆盖 `.env.production` |  | 是 / 否；已有生产环境时请谨慎 |
 | 部署时能接受的停机窗口 |  | 新站可填“不限制” |
 
@@ -135,9 +147,9 @@ production-server-report.md
 
 | 文件 | 用途 |
 | --- | --- |
-| `.env.production.example` 或生成脚本 | 收敛生产环境变量，避免手工漏填 |
-| `deploy/nginx/*.conf` | 生成真实域名的 Nginx 反向代理配置 |
+| `.env.production.example` 或生成脚本 | 收敛 IP+端口模式的生产环境变量，避免手工漏填 |
+| `docker-compose.prod.yml` | 调整生产端口绑定到 `0.0.0.0:18080` 和 `0.0.0.0:10086` |
 | `scripts/ops/*.sh` | 增加一键初始化、部署、更新、验收、备份脚本 |
 | `docs/*.md` | 写成按顺序复制执行的生产部署手册 |
 
-目标是让生产上线流程变成：填表、运行脚本、等服务健康检查通过、访问域名。
+目标是让生产上线流程变成：填表、运行脚本、等服务健康检查通过、访问 `http://165.154.163.41:18080` 和 `http://165.154.163.41:10086/admin`。

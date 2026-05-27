@@ -5,6 +5,12 @@ OUTPUT_FILE="${1:-production-server-report.md}"
 PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 ENV_FILE="${ENV_FILE:-${PROJECT_DIR}/.env.production}"
 COMPOSE_FILE="${COMPOSE_FILE:-${PROJECT_DIR}/docker-compose.prod.yml}"
+ACCESS_MODE="${ACCESS_MODE:-ip-port}"
+PUBLIC_IP="${PUBLIC_IP:-165.154.163.41}"
+FRONTEND_PUBLIC_PORT="${FRONTEND_PUBLIC_PORT:-18080}"
+CMS_PUBLIC_PORT="${CMS_PUBLIC_PORT:-10086}"
+FRONTEND_PUBLIC_URL="${FRONTEND_PUBLIC_URL:-http://${PUBLIC_IP}:${FRONTEND_PUBLIC_PORT}}"
+CMS_PUBLIC_URL="${CMS_PUBLIC_URL:-http://${PUBLIC_IP}:${CMS_PUBLIC_PORT}}"
 FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-}"
 ROOT_DOMAIN="${ROOT_DOMAIN:-}"
 CMS_DOMAIN="${CMS_DOMAIN:-}"
@@ -50,6 +56,19 @@ http_probe() {
 public_ip() {
   if has_cmd curl; then
     curl -4 -fsS --connect-timeout 4 --max-time 8 https://api.ipify.org 2>/dev/null || true
+  fi
+}
+
+tcp_probe() {
+  local host="$1"
+  local port="$2"
+  if has_cmd nc; then
+    nc -vz -w 5 "${host}" "${port}" 2>&1 | one_line
+  elif has_cmd timeout && has_cmd bash; then
+    timeout 5 bash -c "cat < /dev/null > /dev/tcp/${host}/${port}" >/dev/null 2>&1 \
+      && printf "open" || printf "closed or filtered"
+  else
+    printf "nc not installed"
   fi
 }
 
@@ -161,8 +180,12 @@ warn_checks() {
     warnings+=("Current user cannot run docker ps; add the user to the docker group or use sudo.")
   fi
 
-  if ! has_cmd nginx; then
+  if [[ "${ACCESS_MODE}" != "ip-port" ]] && ! has_cmd nginx; then
     warnings+=("Nginx is not installed; HTTPS reverse proxy setup still needs it.")
+  fi
+
+  if [[ "${ACCESS_MODE}" == "ip-port" ]]; then
+    warnings+=("IP+port mode exposes HTTP directly. This is simple for first launch, but HTTPS/domain mode should replace it before collecting sensitive traffic.")
   fi
 
   if [[ ! -f "${ENV_FILE}" ]]; then
@@ -187,6 +210,10 @@ warn_checks() {
   printf "- Project dir: %s\n" "${PROJECT_DIR}"
   printf "- Env file checked: %s\n" "${ENV_FILE}"
   printf "- Compose file checked: %s\n" "${COMPOSE_FILE}"
+  printf "- Access mode: %s\n" "${ACCESS_MODE}"
+  printf "- Public IP input: %s\n" "${PUBLIC_IP}"
+  printf "- Frontend public URL input: %s\n" "${FRONTEND_PUBLIC_URL}"
+  printf "- CMS/API public URL input: %s\n" "${CMS_PUBLIC_URL}"
   printf "- Frontend domain input: %s\n" "${FRONTEND_DOMAIN:-not provided}"
   printf "- Root domain input: %s\n" "${ROOT_DOMAIN:-not provided}"
   printf "- CMS domain input: %s\n\n" "${CMS_DOMAIN:-not provided}"
@@ -213,7 +240,21 @@ warn_checks() {
   printf "| Public IPv4 | %s |\n" "$(public_ip | one_line)"
   printf "| Local addresses | %s |\n" "$(cmd_value hostname -I)"
 
-  printf "\n## DNS Checks\n\n"
+  printf "\n## Public IP And Port Checks\n\n"
+  printf "| Item | Value |\n"
+  printf "| --- | --- |\n"
+  printf "| Expected public IP | %s |\n" "${PUBLIC_IP}"
+  printf "| Server reported public IPv4 | %s |\n" "$(public_ip | one_line)"
+  printf "| Frontend URL | %s |\n" "${FRONTEND_PUBLIC_URL}"
+  printf "| CMS/API URL | %s |\n" "${CMS_PUBLIC_URL}"
+  printf "| TCP %s:%s | %s |\n" "${PUBLIC_IP}" "${FRONTEND_PUBLIC_PORT}" "$(tcp_probe "${PUBLIC_IP}" "${FRONTEND_PUBLIC_PORT}")"
+  printf "| TCP %s:%s | %s |\n" "${PUBLIC_IP}" "${CMS_PUBLIC_PORT}" "$(tcp_probe "${PUBLIC_IP}" "${CMS_PUBLIC_PORT}")"
+  printf "| Frontend health over public URL | %s |\n" "$(http_probe "${FRONTEND_PUBLIC_URL}/api/health")"
+  printf "| CMS health over public URL | %s |\n" "$(http_probe "${CMS_PUBLIC_URL}/api/health")"
+  printf "| CMS admin over public URL | %s |\n" "$(http_probe "${CMS_PUBLIC_URL}/admin")"
+
+  printf "\n## DNS Checks Optional\n\n"
+  printf "No DNS records are required for the current IP+port deployment mode.\n\n"
   printf "| Domain | A records seen from server |\n"
   printf "| --- | --- |\n"
   printf "| %s | %s |\n" "${FRONTEND_DOMAIN:-not provided}" "$(domain_a_records "${FRONTEND_DOMAIN}")"
@@ -244,7 +285,8 @@ warn_checks() {
   printf "| docker ps | %s |\n" "$(cmd_value docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}')"
   printf "| docker disk usage | %s |\n" "$(cmd_value docker system df)"
 
-  printf "\n## Nginx And TLS Tools\n\n"
+  printf "\n## Nginx And TLS Tools Optional\n\n"
+  printf "These are optional for the current IP+port deployment mode and only become required after switching to domain + HTTPS.\n\n"
   printf "| Item | Value |\n"
   printf "| --- | --- |\n"
   printf "| nginx version | %s |\n" "$(cmd_value nginx -v)"
@@ -281,6 +323,20 @@ warn_checks() {
     STRAPI_ADMIN_EMAIL STRAPI_ADMIN_PASSWORD; do
     printf "| %s | %s |\n" "${key}" "$(env_status "${key}")"
   done
+
+  printf "\n## Expected Public Env For IP+Port Mode\n\n"
+  printf "| Variable | Expected value for current plan |\n"
+  printf "| --- | --- |\n"
+  printf "| APP_URL | %s |\n" "${FRONTEND_PUBLIC_URL}"
+  printf "| NEXT_PUBLIC_API_URL | %s |\n" "${CMS_PUBLIC_URL}"
+  printf "| STRAPI_PUBLIC_URL | %s |\n" "${CMS_PUBLIC_URL}"
+  printf "| STRAPI_URL | http://strapi-prod:1337 |\n"
+  printf "| NEXT_BIND_ADDR | 0.0.0.0 |\n"
+  printf "| STRAPI_BIND_ADDR | 0.0.0.0 |\n"
+  printf "| POSTGRES_BIND_ADDR | 127.0.0.1 |\n"
+  printf "| NEXT_PORT | %s |\n" "${FRONTEND_PUBLIC_PORT}"
+  printf "| STRAPI_PORT | %s |\n" "${CMS_PUBLIC_PORT}"
+  printf "| POSTGRES_PORT | 5432 |\n"
 
   printf "\n## Compose Status\n\n"
   printf '```text\n'
