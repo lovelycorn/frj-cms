@@ -364,6 +364,12 @@ at Object.<anonymous> (/app/node_modules/@swc/core/binding.js...)
 NODE_IMAGE=node:20-bookworm-slim
 ```
 
+同时确认后端依赖已显式包含 Linux x64 SWC native package：
+
+```bash
+grep -n "@swc/core-linux-x64-gnu" backend/package.json backend/package-lock.json
+```
+
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml build --no-cache strapi-prod
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d
