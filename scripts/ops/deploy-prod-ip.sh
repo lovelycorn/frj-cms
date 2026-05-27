@@ -177,8 +177,14 @@ EOF
   log "Pulling latest repo changes on current branch."
   git pull --ff-only
 
+  log "Pruning Docker builder cache."
+  ${dc} builder prune -af || true
+
+  log "Building images without cache."
+  ${dc} compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" build --no-cache
+
   log "Starting containers."
-  ${dc} compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up --build -d
+  ${dc} compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d
   ${dc} compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" ps
 
   if [[ "${RUN_SMOKE_CHECK}" == "true" ]]; then
