@@ -1,11 +1,11 @@
-ARG NODE_IMAGE=node:20-alpine
+ARG NODE_IMAGE=node:20-bookworm-slim
 ARG NPM_REGISTRY=https://registry.npmjs.org
 
 FROM ${NODE_IMAGE} AS deps
 ARG NPM_REGISTRY
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm config set registry ${NPM_REGISTRY} && npm ci
+RUN npm config set registry ${NPM_REGISTRY} && npm install
 
 FROM ${NODE_IMAGE} AS builder
 WORKDIR /app

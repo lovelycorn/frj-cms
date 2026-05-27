@@ -94,13 +94,33 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 sudo systemctl enable --now docker
 ```
 
+允许当前登录用户直接执行 Docker 命令：
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+说明：`docker` 组具备接近 root 的权限。单人维护的生产服务器这样配置最方便；如果你不希望授权当前用户，则后续所有 `docker compose ...` 命令都需要加 `sudo`。
+
 验证：
 
 ```bash
 docker --version
 docker compose version
+docker ps
 sudo systemctl status docker --no-pager
 ```
+
+如果 `docker ps` 报 `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`，执行：
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker ps
+```
+
+如果 `newgrp docker` 后仍未生效，退出 SSH 后重新登录服务器，再执行 `docker ps`。
 
 ## 5. 拉取项目并配置环境
 
@@ -166,6 +186,13 @@ NPM_REGISTRY=https://registry.npmjs.org
 cd /opt/frj-cms
 docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
 docker compose --env-file .env.production -f docker-compose.prod.yml ps
+```
+
+命令需要整行执行。如果手动换行，请使用反斜杠：
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml \
+  up --build -d
 ```
 
 本机健康检查：
@@ -298,7 +325,7 @@ crontab -e
 镜像或依赖下载慢：
 
 ```env
-NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-alpine
+NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-bookworm-slim
 POSTGRES_IMAGE=m.daocloud.io/docker.io/library/postgres:16-alpine
 NPM_REGISTRY=https://registry.npmmirror.com
 ```
@@ -307,6 +334,39 @@ NPM_REGISTRY=https://registry.npmmirror.com
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml up --build --force-recreate -d
+```
+
+Next.js 构建报 `/app/public: not found`：
+
+```text
+COPY --from=builder /app/public ./public
+failed to calculate checksum ... "/app/public": not found
+```
+
+原因是旧版前端生产 Dockerfile 依赖 `frontend/public` 目录存在，而空目录不会被 Git 跟踪。更新代码后重新构建：
+
+```bash
+git pull
+docker compose --env-file .env.production -f docker-compose.prod.yml build --no-cache nextjs-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
+Strapi 构建报 `Failed to load native binding`：
+
+```text
+Error: Failed to load native binding
+at Object.<anonymous> (/app/node_modules/@swc/core/binding.js...)
+```
+
+这是 Strapi admin 构建依赖 SWC 原生模块，旧版生产镜像使用 Alpine 时可能缺少匹配的 native binding。确认 `.env.production` 使用 Debian slim Node 镜像后无缓存重建：
+
+```env
+NODE_IMAGE=node:20-bookworm-slim
+```
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml build --no-cache strapi-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
 Strapi 无法连接数据库：

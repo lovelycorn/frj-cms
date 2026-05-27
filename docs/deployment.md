@@ -53,6 +53,22 @@ cp .env.production.example .env.production
 docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
 ```
 
+如果出现 Docker 权限错误：
+
+```text
+permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+```
+
+先在服务器执行：
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+docker ps
+```
+
+如仍未生效，退出 SSH 后重新登录，再执行生产启动命令。
+
 本机验证：
 
 ```bash

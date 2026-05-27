@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:20-alpine
+ARG NODE_IMAGE=node:20-bookworm-slim
 ARG NPM_REGISTRY=https://registry.npmjs.org
 
 FROM ${NODE_IMAGE} AS deps
@@ -12,7 +12,7 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN mkdir -p public && npm run build
 
 FROM ${NODE_IMAGE} AS runner
 WORKDIR /app

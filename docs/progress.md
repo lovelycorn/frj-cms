@@ -21,7 +21,8 @@
 - 新增前后端健康检查接口（`/api/health`）
 - Docker 服务健康检查、依赖顺序、日志滚动配置
 - `strapi-prod` 上传目录持久化
-- Dockerfile 生产构建改为 `npm ci`
+- 前端生产 Dockerfile 使用 `npm ci`
+- 后端生产 Dockerfile 使用 Debian slim Node 镜像，避免 Strapi/SWC native binding 在 Alpine 上构建失败
 - 新增 `.dockerignore`（frontend/backend）
 - 新增运维脚本（smoke 检查、数据库备份/恢复）
 - 新增 macOS 开发环境文档与 `.env.development.example`

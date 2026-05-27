@@ -23,7 +23,8 @@
 - `strapi-prod` 增加上传目录持久化 `strapi_uploads`
 - 所有核心服务增加健康检查与日志轮转
 - 完成镜像构建稳定性增强：
-- 前后端生产 Dockerfile 改为 `npm ci`
+- 前端生产 Dockerfile 使用 `npm ci`
+- 后端生产 Dockerfile 使用 Debian slim Node 镜像，避免 Strapi/SWC native binding 在 Alpine 上构建失败
 - 新增 `frontend/.dockerignore` 与 `backend/.dockerignore`
 - 完成运维脚本：
 - `scripts/smoke-check.sh`
@@ -157,7 +158,7 @@ SITE_CODE=us
 在 `.env.development` 或 `.env.production` 里配置：
 
 ```env
-NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-alpine
+NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-bookworm-slim
 NPM_REGISTRY=https://registry.npmmirror.com
 ```
 
