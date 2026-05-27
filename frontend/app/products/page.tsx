@@ -27,7 +27,7 @@ export async function generateMetadata({ searchParams }: ProductsPageProps): Pro
   };
 }
 
-export default async function ProductsPage({ searchParams }: ProductsPageProps): Promise<JSX.Element> {
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const [{ category }, products, categories] = await Promise.all([searchParams, getProducts(), getCategories()]);
 
   const filteredProducts = category

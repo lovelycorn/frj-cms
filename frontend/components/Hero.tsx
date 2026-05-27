@@ -5,7 +5,7 @@ interface HeroProps {
   hero: SiteHeroContent;
 }
 
-export default function Hero({ hero }: HeroProps): JSX.Element {
+export default function Hero({ hero }: HeroProps) {
   return (
     <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-950 via-brand-900 to-brand-700 text-white">
       <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-brand-300/20 blur-3xl" aria-hidden="true" />

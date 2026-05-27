@@ -43,6 +43,10 @@ i18n 路由规则：
 - 无前缀路径将自动重定向到默认 locale
 - `/_next`、`/api`、`/admin`、`robots/sitemap` 等路径跳过 locale 重写
 
+健康检查接口：
+
+- Next.js：`GET /api/health`
+
 Global Settings 合并规则：
 
 - 前端始终有 `site-config` 默认值作为兜底
@@ -61,8 +65,9 @@ Strapi 内容类型：
 
 补充说明：
 
-- 已补齐 controller/service 工厂文件，避免 `GET /articles` 路由注册异常。
+- 已补齐 controller/service 工厂文件，避免路由注册异常。
 - `src/index.js` 含启动初始化（默认管理员 + 初始示例数据）。
+- 新增健康检查接口：`GET /api/health`
 
 ## 4. 开发规范
 
@@ -84,6 +89,14 @@ docker compose ps
 # 查看 Strapi 日志
 docker compose logs -f strapi
 
+# 运行 smoke 检查
+./scripts/smoke-check.sh
+
 # 停止服务
 docker compose --profile dev down
 ```
+
+## 6. 构建与容器说明
+
+- 前后端生产 Dockerfile 使用 `npm ci`，确保依赖安装可重复
+- `frontend/.dockerignore` 与 `backend/.dockerignore` 已配置，减少镜像构建上下文与脏文件影响

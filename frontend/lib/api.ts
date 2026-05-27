@@ -52,6 +52,12 @@ function getStrapiBaseUrl(): string {
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
 }
 
+function logApiError(context: string, error: unknown): void {
+  if (process.env.NODE_ENV !== "production") {
+    console.error(`${context} error`, error);
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -257,7 +263,7 @@ export async function getProducts(): Promise<Product[]> {
     const response = await fetchFromStrapi<StrapiListResponse<StrapiEntity<RawProduct>>>("/api/products?populate=*");
     return response.data.map(normalizeProduct);
   } catch (error) {
-    console.error("getProducts error", error);
+    logApiError("getProducts", error);
     return [];
   }
 }
@@ -271,7 +277,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     const target = response.data[0];
     return target ? normalizeProduct(target) : null;
   } catch (error) {
-    console.error("getProductBySlug error", error);
+    logApiError("getProductBySlug", error);
     return null;
   }
 }
@@ -281,7 +287,7 @@ export async function getCategories(): Promise<Category[]> {
     const response = await fetchFromStrapi<StrapiListResponse<StrapiEntity<RawCategory>>>("/api/categories");
     return response.data.map(normalizeCategory);
   } catch (error) {
-    console.error("getCategories error", error);
+    logApiError("getCategories", error);
     return [];
   }
 }
@@ -291,7 +297,7 @@ export async function getArticles(): Promise<Article[]> {
     const response = await fetchFromStrapi<StrapiListResponse<StrapiEntity<RawArticle>>>("/api/articles?populate=*");
     return response.data.map(normalizeArticle);
   } catch (error) {
-    console.error("getArticles error", error);
+    logApiError("getArticles", error);
     return [];
   }
 }

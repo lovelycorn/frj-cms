@@ -2,23 +2,41 @@
 
 ## 1. 环境准备
 
-- Docker Desktop 最新稳定版
+最低要求：
+
+- Docker Engine 24+
 - Docker Compose v2
+- CPU 2 Core / RAM 4GB（当前生产测试机配置可用）
+
+建议开放端口：
+
+- `3000`（Next.js）
+- `1337`（Strapi 管理后台，仅测试阶段开放）
+- `5432`（PostgreSQL，生产建议仅内网或不开放）
 
 ## 2. 环境变量
 
-基于 `.env.example` 复制：
+开发环境：
 
 ```bash
 cp .env.example .env
 ```
 
-关键变量：
+生产环境：
 
+```bash
+cp .env.production.example .env
+```
+
+生产必改项：
+
+- `APP_URL`
 - `NEXT_PUBLIC_API_URL`
-- `STRAPI_URL`
-- `DATABASE_*`
-- `APP_KEYS / JWT / SALT`
+- `STRAPI_PUBLIC_URL`
+- `POSTGRES_PASSWORD`
+- `DATABASE_PASSWORD`
+- `APP_KEYS / JWT / SALT / ENCRYPTION_KEY`
+- `STRAPI_ADMIN_PASSWORD`
 
 ## 3. 开发部署
 
@@ -29,9 +47,8 @@ docker compose --profile dev up --build
 验证：
 
 - `http://localhost:3000`
-- `http://localhost:3000/en`（i18n 路由层）
 - `http://localhost:1337/admin`
-- 在 Strapi `Global Settings` 修改 `companyName/contactInfo` 后，前端页脚和联系页可同步生效
+- `./scripts/smoke-check.sh`
 
 ## 4. 生产部署
 
@@ -39,34 +56,101 @@ docker compose --profile dev up --build
 docker compose --profile prod up --build -d
 ```
 
-建议：
+健康检查：
 
-- 使用反向代理（Nginx/Caddy）
-- 使用 HTTPS 证书
-- 管理员密码、密钥全部替换
-- PostgreSQL 开启定期备份
+```bash
+curl -s http://localhost:3000/api/health
+curl -s http://localhost:1337/api/health
+./scripts/smoke-check.sh
+```
 
-## 5. 故障排查
+## 5. 运维命令
 
-### 5.1 Node 镜像拉取超时
+查看状态：
 
-现象：`auth.docker.io ... i/o timeout`
+```bash
+docker compose ps
+```
 
-处理：
+查看日志：
+
+```bash
+docker compose logs -f nextjs-prod
+docker compose logs -f strapi-prod
+docker compose logs -f postgres
+```
+
+平滑重启：
+
+```bash
+docker compose --profile prod up -d
+```
+
+停止服务：
+
+```bash
+docker compose --profile prod down
+```
+
+## 6. 数据备份与恢复
+
+备份：
+
+```bash
+./scripts/ops/backup-postgres.sh
+```
+
+恢复：
+
+```bash
+./scripts/ops/restore-postgres.sh ./backups/frjcms-YYYYMMDD-HHMMSS.sql
+```
+
+## 7. 安全建议
+
+- 生产环境替换所有默认密钥
+- Strapi 管理后台建议走白名单或 VPN
+- PostgreSQL 不直接暴露公网
+- 反向代理启用 HTTPS（Nginx/Caddy）
+
+## 8. 故障排查
+
+### 8.1 镜像拉取超时
+
+症状：`auth.docker.io ... i/o timeout`
+
+解决：
 
 ```env
 NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-alpine
 NPM_REGISTRY=https://registry.npmmirror.com
 ```
 
-### 5.2 Strapi 无法连接数据库
-
-现象：`getaddrinfo ENOTFOUND postgres`
-
-处理步骤：
+重建：
 
 ```bash
-docker compose --profile dev down --remove-orphans
-docker network rm frj_network 2>/dev/null || true
-docker compose --profile dev up --build --force-recreate
+docker compose --profile prod down --remove-orphans
+docker compose --profile prod up --build --force-recreate -d
 ```
+
+### 8.2 Strapi 启动失败并重启
+
+检查：
+
+```bash
+docker compose logs --tail=200 strapi-prod
+```
+
+常见原因：
+
+- `DATABASE_HOST` 非 `postgres`
+- 数据库账号密码不一致
+- `APP_KEYS` 等密钥缺失
+
+### 8.3 页面能打开但无数据
+
+检查：
+
+- `NEXT_PUBLIC_API_URL` 是否可被浏览器访问
+- `STRAPI_URL` 是否指向容器内地址（建议 `http://strapi-prod:1337`）
+- `Strapi > Settings > Users & Permissions > Public` 是否开放 `find/findOne`

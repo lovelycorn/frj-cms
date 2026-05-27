@@ -15,7 +15,7 @@ function isExternalHref(href: string): boolean {
   return href.startsWith("http://") || href.startsWith("https://") || href.startsWith("mailto:") || href.startsWith("tel:");
 }
 
-export default function LocalizedLink({ href, children, className, ...rest }: PropsWithChildren<LocalizedLinkProps>): JSX.Element {
+export default function LocalizedLink({ href, children, className, ...rest }: PropsWithChildren<LocalizedLinkProps>) {
   const pathname = usePathname();
   const locale = extractLocaleFromPathname(pathname);
   const localizedHref = isExternalHref(href) ? href : localizePath(href, locale);

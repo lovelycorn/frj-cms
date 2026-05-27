@@ -5,7 +5,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps): JSX.Element {
+export default function ProductCard({ product }: ProductCardProps) {
   const image = product.images[0];
 
   return (

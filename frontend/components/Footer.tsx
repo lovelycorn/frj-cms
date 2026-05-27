@@ -9,7 +9,7 @@ interface FooterProps {
   navItems: NavigationItem[];
 }
 
-export default function Footer({ companyName, footerDescription, contact, serviceArea, navItems }: FooterProps): JSX.Element {
+export default function Footer({ companyName, footerDescription, contact, serviceArea, navItems }: FooterProps) {
   const quickLinks = navItems.filter((item) => item.href !== "/");
 
   return (

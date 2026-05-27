@@ -4,7 +4,7 @@ import ProductGrid from "@/components/ProductGrid";
 import { getCategories, getProducts } from "@/lib/api";
 import { getRequestSiteConfig } from "@/lib/request-context";
 
-export default async function HomePage(): Promise<JSX.Element> {
+export default async function HomePage() {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);
   const site = await getRequestSiteConfig();
   const hotProducts = products.slice(0, 6);

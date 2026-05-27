@@ -13,7 +13,7 @@ interface HeaderProps {
   navItems: NavigationItem[];
 }
 
-export default function Header({ brandShortName, brandName, navItems }: HeaderProps): JSX.Element {
+export default function Header({ brandShortName, brandName, navItems }: HeaderProps) {
   const pathname = usePathname();
   const locale = extractLocaleFromPathname(pathname);
 

@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function AboutPage(): Promise<JSX.Element> {
+export default async function AboutPage() {
   const site = await getRequestSiteConfig();
 
   return (

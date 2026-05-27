@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>): Promise<JSX.Element> {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const site = await getRequestSiteConfig();
 
   return (

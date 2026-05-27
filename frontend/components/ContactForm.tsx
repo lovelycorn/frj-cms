@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 
 type SubmitState = "idle" | "success";
 
-export default function ContactForm(): JSX.Element {
+export default function ContactForm() {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {

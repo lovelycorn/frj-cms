@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ContactPage(): Promise<JSX.Element> {
+export default async function ContactPage() {
   const site = await getRequestSiteConfig();
 
   return (

@@ -8,7 +8,7 @@ interface CTASectionProps {
 export default function CTASection({
   title = "Need a trusted supplier for your next project?",
   description = "Tell us your requirements and we will deliver a tailored quotation within 24 hours.",
-}: CTASectionProps): JSX.Element {
+}: CTASectionProps) {
   return (
     <section className="section-wrap py-16">
       <div className="rounded-2xl bg-gradient-to-r from-brand-950 to-brand-700 px-6 py-10 text-white shadow-soft sm:px-10">

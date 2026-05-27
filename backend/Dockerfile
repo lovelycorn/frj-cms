@@ -5,7 +5,7 @@ FROM ${NODE_IMAGE} AS deps
 ARG NPM_REGISTRY
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm config set registry ${NPM_REGISTRY} && npm install
+RUN npm config set registry ${NPM_REGISTRY} && npm ci
 
 FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
