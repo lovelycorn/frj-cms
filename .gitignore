@@ -20,6 +20,8 @@ backend/public/uploads
 
 # Env
 .env
+.env.development
+.env.production
 .env.local
 .env.*.local
 

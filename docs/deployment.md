@@ -1,100 +1,122 @@
-# 部署文档
+# 环境与部署入口
 
-## 1. 环境准备
+本项目已将开发环境和生产环境拆成独立部署文件，避免通过同一个 Compose profile 切换环境。
 
-最低要求：
+## 1. 文件边界
 
-- Docker Engine 24+
-- Docker Compose v2
-- CPU 2 Core / RAM 4GB（当前生产测试机配置可用）
+| 环境 | 机器 | Compose 文件 | 环境变量文件 | 文档 |
+| --- | --- | --- | --- | --- |
+| 开发 | macOS M2 Pro / 16GB / 1TB | `docker-compose.dev.yml` | `.env.development` | [development.md](development.md) |
+| 生产 | Ubuntu Server 24.04 | `docker-compose.prod.yml` | `.env.production` | [deployment-ubuntu-24.04.md](deployment-ubuntu-24.04.md) |
 
-建议开放端口：
+模板文件：
 
-- `3000`（Next.js）
-- `1337`（Strapi 管理后台，仅测试阶段开放）
-- `5432`（PostgreSQL，生产建议仅内网或不开放）
+- `.env.development.example`
+- `.env.production.example`
 
-## 2. 环境变量
-
-开发环境：
+## 2. 开发环境快速启动
 
 ```bash
-cp .env.example .env
+cp .env.development.example .env.development
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build
 ```
 
-生产环境：
-
-```bash
-cp .env.production.example .env
-```
-
-生产必改项：
-
-- `APP_URL`
-- `NEXT_PUBLIC_API_URL`
-- `STRAPI_PUBLIC_URL`
-- `POSTGRES_PASSWORD`
-- `DATABASE_PASSWORD`
-- `APP_KEYS / JWT / SALT / ENCRYPTION_KEY`
-- `STRAPI_ADMIN_PASSWORD`
-
-## 3. 开发部署
-
-```bash
-docker compose --profile dev up --build
-```
-
-验证：
+访问：
 
 - `http://localhost:3000`
 - `http://localhost:1337/admin`
-- `./scripts/smoke-check.sh`
 
-## 4. 生产部署
+验证：
 
 ```bash
-docker compose --profile prod up --build -d
+./scripts/smoke-check.sh
 ```
 
-健康检查：
+## 3. 生产环境快速部署
+
+推荐生产系统：
+
+**Ubuntu Server 24.04 LTS x86_64**
+
+推荐理由：
+
+- Ubuntu 24.04 LTS 生命周期长，标准安全维护到 2029 年，后续可通过 Ubuntu Pro 延长维护。
+- Docker Engine 官方文档直接支持 Ubuntu 24.04，安装和排障路径清晰。
+- 海外节点使用 Ubuntu + Docker + Nginx + Certbot 的兼容性和资料更好。
+- CentOS 7 已停止维护，不适合作为新生产环境。
+
+生产启动：
 
 ```bash
-curl -s http://localhost:3000/api/health
-curl -s http://localhost:1337/api/health
-./scripts/smoke-check.sh
+cp .env.production.example .env.production
+# 修改 .env.production 中所有域名、密码、密钥
+docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
+```
+
+本机验证：
+
+```bash
+curl -s http://127.0.0.1:3000/api/health
+curl -s http://127.0.0.1:1337/api/health
+FRONTEND_URL=http://127.0.0.1:3000 STRAPI_URL=http://127.0.0.1:1337 ./scripts/smoke-check.sh
+```
+
+生产环境默认只把 `3000`、`1337`、`5432` 绑定到 `127.0.0.1`，公网通过 Nginx 暴露 `80/443`。
+
+## 4. 生产必改环境变量
+
+```env
+APP_URL=https://www.example.com
+NEXT_PUBLIC_API_URL=https://cms.example.com
+STRAPI_PUBLIC_URL=https://cms.example.com
+STRAPI_URL=http://strapi-prod:1337
+
+POSTGRES_PASSWORD=<强密码>
+DATABASE_PASSWORD=<同 POSTGRES_PASSWORD>
+DATABASE_URL=postgresql://strapi:<强密码>@postgres:5432/frjcms
+
+APP_KEYS=<key1>,<key2>,<key3>,<key4>
+API_TOKEN_SALT=<随机字符串>
+ADMIN_JWT_SECRET=<随机字符串>
+TRANSFER_TOKEN_SALT=<随机字符串>
+JWT_SECRET=<随机字符串>
+ENCRYPTION_KEY=<随机字符串>
+
+STRAPI_ADMIN_EMAIL=<管理员邮箱>
+STRAPI_ADMIN_PASSWORD=<强密码>
 ```
 
 ## 5. 运维命令
 
-查看状态：
+生产查看状态：
 
 ```bash
-docker compose ps
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
 ```
 
-查看日志：
+生产查看日志：
 
 ```bash
-docker compose logs -f nextjs-prod
-docker compose logs -f strapi-prod
-docker compose logs -f postgres
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f nextjs-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f strapi-prod
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f postgres
 ```
 
-平滑重启：
+生产重启：
 
 ```bash
-docker compose --profile prod up -d
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
-停止服务：
+生产停止：
 
 ```bash
-docker compose --profile prod down
+docker compose --env-file .env.production -f docker-compose.prod.yml down
 ```
 
 ## 6. 数据备份与恢复
 
-备份：
+备份脚本默认使用生产配置：
 
 ```bash
 ./scripts/ops/backup-postgres.sh
@@ -106,51 +128,18 @@ docker compose --profile prod down
 ./scripts/ops/restore-postgres.sh ./backups/frjcms-YYYYMMDD-HHMMSS.sql
 ```
 
-## 7. 安全建议
-
-- 生产环境替换所有默认密钥
-- Strapi 管理后台建议走白名单或 VPN
-- PostgreSQL 不直接暴露公网
-- 反向代理启用 HTTPS（Nginx/Caddy）
-
-## 8. 故障排查
-
-### 8.1 镜像拉取超时
-
-症状：`auth.docker.io ... i/o timeout`
-
-解决：
-
-```env
-NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-alpine
-NPM_REGISTRY=https://registry.npmmirror.com
-```
-
-重建：
+如需在开发环境备份，可显式切换：
 
 ```bash
-docker compose --profile prod down --remove-orphans
-docker compose --profile prod up --build --force-recreate -d
+COMPOSE_FILE=docker-compose.dev.yml COMPOSE_ENV_FILE=.env.development ./scripts/ops/backup-postgres.sh
 ```
 
-### 8.2 Strapi 启动失败并重启
+## 7. Nginx 模板
 
-检查：
+生产 Nginx 配置模板：
 
-```bash
-docker compose logs --tail=200 strapi-prod
+```text
+deploy/nginx/frj-cms.conf.example
 ```
 
-常见原因：
-
-- `DATABASE_HOST` 非 `postgres`
-- 数据库账号密码不一致
-- `APP_KEYS` 等密钥缺失
-
-### 8.3 页面能打开但无数据
-
-检查：
-
-- `NEXT_PUBLIC_API_URL` 是否可被浏览器访问
-- `STRAPI_URL` 是否指向容器内地址（建议 `http://strapi-prod:1337`）
-- `Strapi > Settings > Users & Permissions > Public` 是否开放 `find/findOne`
+完整生产部署步骤见 [deployment-ubuntu-24.04.md](deployment-ubuntu-24.04.md)。

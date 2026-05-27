@@ -29,14 +29,18 @@
 - `scripts/smoke-check.sh`
 - `scripts/ops/backup-postgres.sh`
 - `scripts/ops/restore-postgres.sh`
-- 完成生产环境模板：
+- 完成开发/生产环境分离：
+- `docker-compose.dev.yml`
+- `docker-compose.prod.yml`
+- `.env.development.example`
 - `.env.production.example`
 
 ## 文档导航
 
 - 开发文档：[docs/development.md](docs/development.md)
 - 通用部署文档：[docs/deployment.md](docs/deployment.md)
-- CentOS 7.9 部署文档：[docs/deployment-centos7.md](docs/deployment-centos7.md)
+- Ubuntu 24.04 LTS 生产部署手册：[docs/deployment-ubuntu-24.04.md](docs/deployment-ubuntu-24.04.md)
+- CentOS 7.9 历史部署文档（不再推荐新生产环境使用）：[docs/deployment-centos7.md](docs/deployment-centos7.md)
 - 项目计划：[docs/project-plan.md](docs/project-plan.md)
 - 进度说明：[docs/progress.md](docs/progress.md)
 
@@ -47,16 +51,19 @@ frontend/               # Next.js 站点
 backend/                # Strapi CMS
 docs/                   # 项目文档
 scripts/                # 运维与验收脚本
-.env.example            # 开发环境变量模板
+.env.development.example # macOS 开发环境变量模板
 .env.production.example # 生产环境变量模板
-docker-compose.yml      # 容器编排（dev/prod profile）
+docker-compose.dev.yml  # macOS 开发环境编排
+docker-compose.prod.yml # Ubuntu 生产环境编排
 ```
 
 ## 快速启动（开发）
 
+适用：macOS M2 Pro / 16GB / 1TB。
+
 ```bash
-cp .env.example .env
-docker compose --profile dev up --build
+cp .env.development.example .env.development
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build
 ```
 
 访问：
@@ -66,17 +73,19 @@ docker compose --profile dev up --build
 
 ## 快速启动（生产测试）
 
-```bash
-cp .env.production.example .env
-# 修改 .env 中所有密钥、密码、域名
+推荐生产系统：Ubuntu Server 24.04 LTS x86_64。完整部署流程见 [docs/deployment-ubuntu-24.04.md](docs/deployment-ubuntu-24.04.md)。
 
-docker compose --profile prod up --build -d
+```bash
+cp .env.production.example .env.production
+# 修改 .env.production 中所有密钥、密码、域名
+
+docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d
 ```
 
 访问：
 
-- Frontend: `http://<server-ip>:3000`
-- Strapi Admin: `http://<server-ip>:1337/admin`
+- Frontend: `https://www.example.com`
+- Strapi Admin: `https://cms.example.com/admin`
 
 ## 健康检查与验收
 
@@ -132,7 +141,7 @@ SITE_CODE=us
 - Email: `admin@example.com`
 - Password: `Admin123456!`
 
-仅用于首次初始化，生产环境请在 `.env` 中替换。
+仅用于首次初始化，生产环境请在 `.env.production` 中替换。
 
 ## 安全建议（生产必做）
 
@@ -145,7 +154,7 @@ SITE_CODE=us
 
 1. 拉取镜像超时（`auth.docker.io ... i/o timeout`）
 
-在 `.env` 里配置：
+在 `.env.development` 或 `.env.production` 里配置：
 
 ```env
 NODE_IMAGE=m.daocloud.io/docker.io/library/node:20-alpine
@@ -157,6 +166,6 @@ NPM_REGISTRY=https://registry.npmmirror.com
 确认运行命令在项目根目录，并使用 compose 网络：
 
 ```bash
-docker compose --profile dev down --remove-orphans
-docker compose --profile dev up --build --force-recreate
+docker compose --env-file .env.development -f docker-compose.dev.yml down --remove-orphans
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build --force-recreate
 ```

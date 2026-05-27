@@ -1,102 +1,148 @@
-# 开发文档
+# macOS 开发环境文档
 
-## 1. 架构说明
+适用环境：macOS，Apple Silicon（M2 Pro），16GB RAM / 1TB SSD。
 
-当前为单站独立部署形态：
+## 1. 开发环境边界
 
-- `frontend`：品牌站前端（Next.js 15 + Tailwind + TS）
-- `backend`：内容管理（Strapi v5）
-- `postgres`：业务数据存储
+开发环境使用独立文件：
 
-每个站点可独立复制一套，后续可抽离为多站复用模块。
+- Compose：`docker-compose.dev.yml`
+- 环境变量模板：`.env.development.example`
+- 本机环境变量文件：`.env.development`
 
-## 2. 前端模块
+开发服务：
 
-核心目录：
+- `nextjs`：Next.js 开发服务，支持热更新
+- `strapi`：Strapi develop 模式，支持后台调试
+- `postgres`：本地开发数据库
 
-- `app/`：路由与页面
-- `components/`：通用组件（Header/Footer/Hero/ProductCard 等）
-- `lib/api.ts`：Strapi API 封装
-- `lib/site-config.ts`：多国家站点配置中心
-- `lib/i18n-routing.ts`：语言路由与路径处理
-- `lib/site-runtime.ts`：`site-config` 与 Strapi `Global Settings` 合并层
-- `lib/request-context.ts`：请求上下文 locale 与配置读取入口
-- `middleware.ts`：locale 路由重写与默认语言跳转
-- `types/`：业务类型定义
+开发环境不会使用生产 Compose 和生产环境变量。
 
-API 方法：
+## 2. 本机准备
 
-- `getProducts`
-- `getProductBySlug`
-- `getCategories`
-- `getArticles`
+安装：
 
-站点配置方法：
+- Docker Desktop for Mac（Apple Silicon 版本）
+- Git
 
-- `getSiteConfig`
-- `resolveSiteCode`
-- `getSupportedSiteCodes`
+Docker Desktop 建议资源：
 
-i18n 路由规则：
+- CPU：4 Core 或以上
+- Memory：8GB 左右
+- Disk：至少 20GB 可用空间
 
-- 支持路径前缀：`/en`、`/de`、`/ja`
-- 无前缀路径将自动重定向到默认 locale
-- `/_next`、`/api`、`/admin`、`robots/sitemap` 等路径跳过 locale 重写
+## 3. 快速启动
 
-健康检查接口：
+```bash
+cp .env.development.example .env.development
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build
+```
 
-- Next.js：`GET /api/health`
+访问：
 
-Global Settings 合并规则：
+- Frontend: `http://localhost:3000`
+- Strapi Admin: `http://localhost:1337/admin`
 
-- 前端始终有 `site-config` 默认值作为兜底
-- 若 Strapi `Global Settings` 存在：
-- `companyName` 覆盖页面公司名展示
-- `contactInfo` 解析后覆盖联系信息字段（支持 JSON 和 `Key: Value` 文本）
+默认管理员：
 
-## 3. 后端模块
+- Email: `admin@example.com`
+- Password: `Admin123456!`
 
-Strapi 内容类型：
+## 4. 健康检查
 
-- Product
-- Category
-- Article
-- Global Settings
-
-补充说明：
-
-- 已补齐 controller/service 工厂文件，避免路由注册异常。
-- `src/index.js` 含启动初始化（默认管理员 + 初始示例数据）。
-- 新增健康检查接口：`GET /api/health`
-
-## 4. 开发规范
-
-- TypeScript 严格模式，不使用 `any`
-- 组件化优先，接口边界清晰
-- `docs/` 与代码变更同步更新
-- 环境变量统一由 `.env` 注入
-- 跨国家站点差异优先在 `site-config` 中抽离，不直接写死到页面
+```bash
+curl -s http://localhost:3000/api/health
+curl -s http://localhost:1337/api/health
+./scripts/smoke-check.sh
+```
 
 ## 5. 常用命令
 
+后台启动：
+
 ```bash
-# 启动开发环境
-docker compose --profile dev up --build
-
-# 查看服务状态
-docker compose ps
-
-# 查看 Strapi 日志
-docker compose logs -f strapi
-
-# 运行 smoke 检查
-./scripts/smoke-check.sh
-
-# 停止服务
-docker compose --profile dev down
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build -d
 ```
 
-## 6. 构建与容器说明
+查看服务：
 
-- 前后端生产 Dockerfile 使用 `npm ci`，确保依赖安装可重复
-- `frontend/.dockerignore` 与 `backend/.dockerignore` 已配置，减少镜像构建上下文与脏文件影响
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml ps
+```
+
+查看日志：
+
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml logs -f nextjs
+docker compose --env-file .env.development -f docker-compose.dev.yml logs -f strapi
+docker compose --env-file .env.development -f docker-compose.dev.yml logs -f postgres
+```
+
+停止服务：
+
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml down
+```
+
+清空开发数据库和缓存卷：
+
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml down -v
+```
+
+## 6. 代码结构
+
+前端核心目录：
+
+- `frontend/app/`：Next.js App Router 页面和 API route
+- `frontend/components/`：通用组件
+- `frontend/lib/api.ts`：Strapi API 封装
+- `frontend/lib/site-config.ts`：多国家站点配置中心
+- `frontend/lib/i18n-routing.ts`：语言路由与路径处理
+- `frontend/middleware.ts`：locale 路由重写与默认语言跳转
+
+后端核心目录：
+
+- `backend/src/api/`：Strapi API 内容类型、controller、service、route
+- `backend/src/components/`：Strapi 组件 schema
+- `backend/config/`：Strapi 数据库、中间件、服务配置
+- `backend/src/index.js`：启动初始化逻辑
+
+## 7. 开发规则
+
+- 开发环境只改 `.env.development`，不要把真实生产密钥写入开发文件。
+- 本地调试优先使用 `docker-compose.dev.yml`，不要使用生产 Compose。
+- 修改依赖后重新执行 `docker compose --env-file .env.development -f docker-compose.dev.yml up --build`。
+- 若页面无数据，先确认 Strapi Public 权限是否开放对应内容类型的 `find/findOne`。
+
+## 8. 开发环境排障
+
+端口被占用：
+
+```bash
+lsof -i :3000
+lsof -i :1337
+lsof -i :5432
+```
+
+可以在 `.env.development` 中调整：
+
+```env
+NEXT_PORT=3001
+STRAPI_PORT=1338
+POSTGRES_PORT=5433
+```
+
+Apple Silicon 镜像构建慢：
+
+```env
+NODE_IMAGE=node:20-alpine
+POSTGRES_IMAGE=postgres:16-alpine
+NPM_REGISTRY=https://registry.npmmirror.com
+```
+
+重建：
+
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml up --build --force-recreate
+```

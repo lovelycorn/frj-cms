@@ -9,7 +9,7 @@
 - 完成核心页面与组件模块化
 - 完成 Strapi v5 内容模型与种子数据
 - 完成 API 通信封装与页面数据展示
-- 完成 Docker Compose（dev/prod）
+- 完成 Docker Compose 开发/生产分离（`docker-compose.dev.yml` / `docker-compose.prod.yml`）
 - 完成网络超时兼容（Node 镜像、NPM 源可配置）
 - 完成 Strapi 路由/controller/service 兼容修复
 - 完成 DB DNS 解析问题修复（compose 网络方案）
@@ -24,7 +24,9 @@
 - Dockerfile 生产构建改为 `npm ci`
 - 新增 `.dockerignore`（frontend/backend）
 - 新增运维脚本（smoke 检查、数据库备份/恢复）
-- 新增 CentOS 7.9 部署手册
+- 新增 macOS 开发环境文档与 `.env.development.example`
+- 新增 Ubuntu 24.04 LTS 生产部署手册与 Nginx 反向代理模板
+- CentOS 7.9 部署手册保留为历史文档，不再推荐新生产环境使用
 
 ## 当前状态
 
@@ -35,12 +37,12 @@
 - 多国家站点：可通过 `SITE_CODE` 切换品牌与文案基础信息
 - 多语言路由：前端内部跳转会自动保留当前 locale 前缀
 - CMS 内容覆盖：`companyName`、`contactInfo` 已可在后台修改并前端生效
-- 已具备生产测试部署条件（CentOS 7.9）
+- 已具备生产测试部署条件（推荐 Ubuntu Server 24.04 LTS）
 
 ## 风险与待办
 
 - 生产环境密钥与默认账号需全部替换
-- 反向代理与 HTTPS 证书尚未接入
+- 真实服务器仍需按部署手册接入反向代理与 HTTPS 证书
 - 需补充自动化测试（接口与页面）
 - 需补充 CI/CD（构建、镜像、部署流水线）
 
