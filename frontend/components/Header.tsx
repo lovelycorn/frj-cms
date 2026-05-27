@@ -4,14 +4,15 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+import type { NavigationItem } from "@/lib/site-config";
 
-export default function Header(): JSX.Element {
+interface HeaderProps {
+  brandShortName: string;
+  brandName: string;
+  navItems: NavigationItem[];
+}
+
+export default function Header({ brandShortName, brandName, navItems }: HeaderProps): JSX.Element {
   const pathname = usePathname();
 
   return (
@@ -19,9 +20,9 @@ export default function Header(): JSX.Element {
       <div className="section-wrap flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-wide text-brand-900">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded bg-brand-700 text-sm font-bold text-white">
-            FRJ
+            {brandShortName}
           </span>
-          <span>Industrial</span>
+          <span>{brandName}</span>
         </Link>
 
         <nav aria-label="Main navigation" className="flex items-center gap-1 sm:gap-2">

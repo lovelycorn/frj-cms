@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About Us",
-  description: "Learn more about FRJ Industrial and our export manufacturing capabilities.",
-};
+import { getSiteConfig } from "@/lib/site-config";
+
+export function generateMetadata(): Metadata {
+  const site = getSiteConfig();
+
+  return {
+    title: `About ${site.brandName}`,
+    description: `Learn more about ${site.companyName} and our export manufacturing capabilities.`,
+  };
+}
 
 export default function AboutPage(): JSX.Element {
+  const site = getSiteConfig();
+
   return (
     <main className="section-wrap py-14">
-      <h1 className="title-xl">About FRJ Industrial</h1>
-      <p className="section-subtitle">
-        We are a China-based industrial exporter helping B2B buyers build stable supply channels in global markets.
-      </p>
+      <h1 className="title-xl">About {site.brandName}</h1>
+      <p className="section-subtitle">{site.companyIntro}</p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-soft">

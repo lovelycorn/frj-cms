@@ -2,41 +2,53 @@ import type { Metadata } from "next";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { getSiteConfig } from "@/lib/site-config";
 
 import "./globals.css";
 
 const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
-  title: {
-    default: "FRJ Industrial Solutions | Trusted Global Supplier",
-    template: "%s | FRJ Industrial Solutions",
-  },
-  description:
-    "Industrial foreign trade website template powered by Next.js and Strapi, built for scalable multi-site deployment.",
-  openGraph: {
-    title: "FRJ Industrial Solutions",
-    description: "Reliable industrial products and export services for global buyers.",
-    url: appUrl,
-    siteName: "FRJ Industrial Solutions",
-    locale: "en_US",
-    type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export function generateMetadata(): Metadata {
+  const site = getSiteConfig();
+
+  return {
+    metadataBase: new URL(appUrl),
+    title: {
+      default: site.seoTitle,
+      template: `%s | ${site.brandName}`,
+    },
+    description: site.seoDescription,
+    openGraph: {
+      title: site.brandName,
+      description: site.ogDescription,
+      url: appUrl,
+      siteName: site.brandName,
+      locale: site.ogLocale,
+      type: "website",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>): JSX.Element {
+  const site = getSiteConfig();
+
   return (
-    <html lang="en">
+    <html lang={site.htmlLang}>
       <body>
         <div className="site-shell">
-          <Header />
+          <Header brandShortName={site.brandShortName} brandName={site.brandName} navItems={site.navigation} />
           <div className="content-shell">{children}</div>
-          <Footer />
+          <Footer
+            companyName={site.companyName}
+            footerDescription={site.footerDescription}
+            contact={site.contact}
+            serviceArea={site.serviceArea}
+            navItems={site.navigation}
+          />
         </div>
       </body>
     </html>

@@ -2,14 +2,16 @@ import CTASection from "@/components/CTASection";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import { getCategories, getProducts } from "@/lib/api";
+import { getSiteConfig } from "@/lib/site-config";
 
 export default async function HomePage(): Promise<JSX.Element> {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+  const site = getSiteConfig();
   const hotProducts = products.slice(0, 6);
 
   return (
     <main>
-      <Hero />
+      <Hero hero={site.hero} />
 
       <section className="section-wrap py-14">
         <h2 className="title-lg">Product Categories</h2>
@@ -35,7 +37,7 @@ export default async function HomePage(): Promise<JSX.Element> {
 
       <section className="section-wrap py-14">
         <h2 className="title-lg">Hot Products</h2>
-        <p className="section-subtitle">Popular choices from buyers in North America, Europe, and the Middle East.</p>
+        <p className="section-subtitle">Popular choices from buyers in our focus market: {site.serviceArea}</p>
         <div className="mt-8">
           <ProductGrid products={hotProducts} emptyMessage="No featured products yet. Add products in Strapi to display them." />
         </div>
@@ -45,10 +47,7 @@ export default async function HomePage(): Promise<JSX.Element> {
         <div className="grid gap-10 lg:grid-cols-2">
           <div>
             <h2 className="title-lg">About Our Company</h2>
-            <p className="section-subtitle">
-              FRJ Industrial supports global importers with strict quality systems, responsive communication, and
-              manufacturing transparency.
-            </p>
+            <p className="section-subtitle">{site.companyIntro}</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -90,7 +89,10 @@ export default async function HomePage(): Promise<JSX.Element> {
         </div>
       </section>
 
-      <CTASection />
+      <CTASection
+        title={`Need a trusted supplier for ${site.code.toUpperCase()} market projects?`}
+        description="Tell us your requirements and we will provide a tailored quotation with lead time and compliance details."
+      />
     </main>
   );
 }

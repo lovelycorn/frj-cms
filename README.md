@@ -18,6 +18,7 @@
 - 已完成 Strapi 内容模型：Product / Category / Article / Global Settings
 - 已完成 SEO 基础能力：metadata、OpenGraph、sitemap、robots、动态 title/description
 - 已完成 Docker 开发/生产 Profile 配置
+- 已完成多国家站点配置中心：`frontend/lib/site-config.ts`
 - 已验证运行：
   - `http://localhost:3000` 前端可访问
   - `http://localhost:1337/admin` Strapi 后台可访问
@@ -51,6 +52,26 @@ docker compose --profile dev up --build
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Strapi Admin: [http://localhost:1337/admin](http://localhost:1337/admin)
 - Strapi API: [http://localhost:1337/api/products](http://localhost:1337/api/products)
+
+## 多站点配置
+
+新增 `SITE_CODE` 环境变量，当前支持：`us / de / jp`
+
+```env
+SITE_CODE=us
+```
+
+站点配置集中在：
+
+- `frontend/lib/site-config.ts`
+
+可配置项包含：
+
+- 品牌名与语言
+- Hero 文案
+- 联系方式
+- 服务区域
+- SEO 默认信息
 
 ## 默认管理员
 

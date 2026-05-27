@@ -17,6 +17,7 @@
 - `app/`：路由与页面
 - `components/`：通用组件（Header/Footer/Hero/ProductCard 等）
 - `lib/api.ts`：Strapi API 封装
+- `lib/site-config.ts`：多国家站点配置中心
 - `types/`：业务类型定义
 
 API 方法：
@@ -25,6 +26,12 @@ API 方法：
 - `getProductBySlug`
 - `getCategories`
 - `getArticles`
+
+站点配置方法：
+
+- `getSiteConfig`
+- `resolveSiteCode`
+- `getSupportedSiteCodes`
 
 ## 3. 后端模块
 
@@ -46,6 +53,7 @@ Strapi 内容类型：
 - 组件化优先，接口边界清晰
 - `docs/` 与代码变更同步更新
 - 环境变量统一由 `.env` 注入
+- 跨国家站点差异优先在 `site-config` 中抽离，不直接写死到页面
 
 ## 5. 常用命令
 

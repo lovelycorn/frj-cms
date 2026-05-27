@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
 
 import ContactForm from "@/components/ContactForm";
+import { getSiteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contact FRJ Industrial for product inquiries, quotations, and partnership opportunities.",
-};
+export function generateMetadata(): Metadata {
+  const site = getSiteConfig();
+
+  return {
+    title: `Contact ${site.brandName}`,
+    description: `Contact ${site.companyName} for product inquiries, quotations, and partnership opportunities.`,
+  };
+}
 
 export default function ContactPage(): JSX.Element {
+  const site = getSiteConfig();
+
   return (
     <main className="section-wrap py-14">
       <h1 className="title-xl">Contact Us</h1>
@@ -21,10 +28,10 @@ export default function ContactPage(): JSX.Element {
         <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
           <h2 className="text-lg font-semibold text-brand-950">Business Contact</h2>
           <ul className="mt-4 space-y-3 text-sm text-slate-700">
-            <li>Email: sales@example.com</li>
-            <li>Phone: +86 21 5555 8888</li>
-            <li>Working Hours: Mon - Fri, 09:00 - 18:00 (GMT+8)</li>
-            <li>Address: Pudong, Shanghai, China</li>
+            <li>Email: {site.contact.email}</li>
+            <li>Phone: {site.contact.phone}</li>
+            <li>Working Hours: {site.contact.workingHours}</li>
+            <li>Address: {site.contact.address}</li>
           </ul>
         </aside>
       </div>

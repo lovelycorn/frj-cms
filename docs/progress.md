@@ -13,6 +13,7 @@
 - 完成网络超时兼容（Node 镜像、NPM 源可配置）
 - 完成 Strapi 路由/controller/service 兼容修复
 - 完成 DB DNS 解析问题修复（compose 网络方案）
+- 完成站点配置抽离（`site-config`），支持 `SITE_CODE=us/de/jp`
 
 ## 当前状态
 
@@ -20,6 +21,7 @@
 - `backend`：运行正常
 - `postgres`：运行正常
 - 管理后台：`/admin` 可进入并可编辑内容模型
+- 多国家站点：可通过 `SITE_CODE` 切换品牌与文案基础信息
 
 ## 风险与待办
 
@@ -30,6 +32,6 @@
 
 ## 下一步建议
 
-- 抽离 `site-config` 作为多国家站点配置中心
-- 增加 `i18n` 与多域名策略
+- 增加 i18n 路由层（按 locale 输出页面）
+- 建立 `site-config` 到 CMS 字段的映射策略
 - 建立公共 UI/Schema/API SDK 包
