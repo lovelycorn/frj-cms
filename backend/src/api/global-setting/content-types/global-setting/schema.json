@@ -1,0 +1,31 @@
+{
+  "kind": "singleType",
+  "collectionName": "global_settings",
+  "info": {
+    "singularName": "global-setting",
+    "pluralName": "global-settings",
+    "displayName": "Global Settings",
+    "description": "Global site-level settings"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "companyName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "contactInfo": {
+      "type": "text"
+    },
+    "socialLinks": {
+      "type": "json"
+    }
+  }
+}
