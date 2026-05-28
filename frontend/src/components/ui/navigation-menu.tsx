@@ -12,7 +12,6 @@ const NavigationMenu = React.forwardRef<
   return (
     <NavigationMenuPrimitive.Root ref={ref} className={cn("relative z-10 flex flex-1 items-center justify-center", className)} {...props}>
       {children}
-      <NavigationMenuViewport />
     </NavigationMenuPrimitive.Root>
   );
 });
@@ -57,7 +56,7 @@ const NavigationMenuContent = React.forwardRef<
     <NavigationMenuPrimitive.Content
       ref={ref}
       className={cn(
-        "left-0 top-0 w-full data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out lg:absolute lg:w-auto",
+        "absolute left-1/2 top-full z-50 mt-3 w-[min(92vw,760px)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.16)] data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out",
         className,
       )}
       {...props}
@@ -66,24 +65,6 @@ const NavigationMenuContent = React.forwardRef<
 });
 
 const NavigationMenuLink = NavigationMenuPrimitive.Link;
-
-const NavigationMenuViewport = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
->(function NavigationMenuViewport({ className, ...props }, ref) {
-  return (
-    <div className="absolute left-0 top-full flex justify-center">
-      <NavigationMenuPrimitive.Viewport
-        ref={ref}
-        className={cn(
-          "relative mt-3 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)] data-[state=closed]:animate-out data-[state=open]:animate-in lg:w-[var(--radix-navigation-menu-viewport-width)]",
-          className,
-        )}
-        {...props}
-      />
-    </div>
-  );
-});
 
 export {
   NavigationMenu,

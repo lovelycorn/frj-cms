@@ -11,14 +11,25 @@
 - PostgreSQL 16
 - Docker Compose
 
-## 本阶段（前端 UI 体系升级）完成情况
+## 当前阶段交付（工业外贸运营后台一期）
 
-- 已完成 `frontend/src` 组件化架构重建（`ui/layout/sections/commerce/industry`）
-- 已完成 P0 模块重构：`Header`、`Hero`、`Product Showcase`、`Industry Solutions`、`Factory Strength`、`Inquiry CTA`、`Footer`、`Mobile Navigation`
-- 已完成产品系统组件：`Product Grid/Card/Detail/Gallery/Specification/Related`
-- 已完成询盘系统入口统一：头部、页脚、悬浮询盘、移动端 WhatsApp CTA、联系页表单
-- 已完成接口兼容：产品规格多形态字段映射（不改 Strapi 数据模型）
-- 已完成验收：Docker 开发环境可运行，核心页面与健康接口通过
+已完成（2026-05）：
+
+- Strapi 数据模型升级：产品中心、内容中心、询盘中心、轻量统计保留层
+- 产品中心：`Products/Categories/Industries/Downloads/Certificates`
+- 内容中心：`Blog/Case Study/News/FAQ`
+- 询盘中心：`Inquiry`（含状态流转 `new/contacted/quoted/closed`）
+- 轻量统计：`analytics-event` 事件模型 + `dashboard/overview` 汇总接口
+- 前端埋点链路：`page_view / product_click / inquiry_submit`（Strapi + PostHog 可选）
+- 管理端中文展示：Strapi Admin locale 配置为中文
+- 权限基线：运营看板受保护，内容读与运营读写可通过 API Token 分离
+- Docker 编排可用：`docker compose up -d` 可启动 `postgres/strapi/nextjs`
+
+本阶段明确不做：
+
+- AI 插件能力
+- SaaS 与多租户
+- SEO 中心
 
 ## 快速开始（开发）
 
@@ -53,9 +64,12 @@ scripts/                  # 统一脚本入口
 - 开发文档：[docs/development.md](docs/development.md)
 - 架构文档：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 变更记录：[docs/CHANGELOG.md](docs/CHANGELOG.md)
-- 前端升级交付：[docs/FRONTEND_UI_UPGRADE.md](docs/FRONTEND_UI_UPGRADE.md)
-- 前端验收清单：[docs/FRONTEND_ACCEPTANCE_CHECKLIST.md](docs/FRONTEND_ACCEPTANCE_CHECKLIST.md)
 - 后端权限基线：[docs/BACKEND_ACCESS_CONTROL.md](docs/BACKEND_ACCESS_CONTROL.md)
+- 历史前端升级文档（归档）：`docs/FRONTEND_UI_UPGRADE.md`、`docs/FRONTEND_ACCEPTANCE_CHECKLIST.md`
+
+## 已知问题（当前）
+
+- 联系页询盘存在“偶发前端失败提示但后台已入库”的残留问题，已增加同源 API 代理与确认补偿机制，仍需继续稳定性收敛。
 
 ## License
 

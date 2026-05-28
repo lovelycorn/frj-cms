@@ -8,6 +8,12 @@ interface StrapiSingleResponse<T> {
   data: T | null;
 }
 
+interface InquiryConfirmResponse {
+  data?: {
+    exists?: boolean;
+  };
+}
+
 type StrapiEntity<T extends Record<string, unknown>> =
   | ({ id: number } & T)
   | {
@@ -48,11 +54,77 @@ interface RawGlobalSettings extends Record<string, unknown> {
   socialLinks?: unknown;
 }
 
+export interface InquiryUtmParams {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+}
+
+export interface SubmitInquiryInput {
+  name: string;
+  email: string;
+  message: string;
+  company?: string;
+  phone?: string;
+  country?: string;
+  source_page?: string;
+  source_product?: number;
+  utm_params?: InquiryUtmParams;
+}
+
 const FALLBACK_STRAPI_URL = "http://localhost:1337";
 
 function getStrapiBaseUrl(): string {
   const raw = process.env.STRAPI_URL ?? process.env.NEXT_PUBLIC_API_URL ?? FALLBACK_STRAPI_URL;
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+function sanitizeString(value: unknown, maxLength: number): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  return normalized.slice(0, maxLength);
+}
+
+async function confirmInquirySubmission(input: SubmitInquiryInput): Promise<boolean> {
+  const requestBody = JSON.stringify({
+    data: {
+      name: input.name,
+      email: input.email,
+      message: input.message,
+    },
+  });
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch("/api/inquiries/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
+
+    if (response.ok) {
+      const json = (await response.json()) as InquiryConfirmResponse;
+      if (json?.data?.exists === true) {
+        return true;
+      }
+    }
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 250);
+    });
+  }
+
+  return false;
 }
 
 function logApiError(context: string, error: unknown): void {
@@ -396,5 +468,46 @@ export async function getGlobalSettings(): Promise<GlobalSettings | null> {
     return normalizeGlobalSettings(response.data);
   } catch {
     return null;
+  }
+}
+
+export async function submitInquiry(input: SubmitInquiryInput): Promise<boolean> {
+  const payload: SubmitInquiryInput = {
+    name: sanitizeString(input.name, 100) || "",
+    email: sanitizeString(input.email, 120) || "",
+    message: sanitizeString(input.message, 2000) || "",
+    company: sanitizeString(input.company, 120),
+    phone: sanitizeString(input.phone, 50),
+    country: sanitizeString(input.country, 80),
+    source_page: sanitizeString(input.source_page, 255),
+    source_product: typeof input.source_product === "number" ? input.source_product : undefined,
+    utm_params: input.utm_params,
+  };
+
+  if (!payload.name || !payload.email || !payload.message) {
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/inquiries/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: payload }),
+    });
+
+    if (response.ok) {
+      return true;
+    }
+  } catch (error) {
+    logApiError("submitInquiry", error);
+  }
+
+  try {
+    return await confirmInquirySubmission(payload);
+  } catch (error) {
+    logApiError("confirmInquirySubmission", error);
+    return false;
   }
 }

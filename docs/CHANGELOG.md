@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-05-29
+
+### Added
+
+- 新增 Next.js 同源代理接口：
+  - `POST /api/inquiries/submit`
+  - `POST /api/inquiries/confirm`
+  - `POST /api/analytics/events`
+- 新增后端询盘确认接口 `POST /api/inquiries/confirm`，用于提交异常时的补偿确认。
+- 新增行为事件与询盘链路相关的前端跟踪模块（`frontend/lib/analytics.ts`、`frontend/src/components/analytics/*`）。
+- 新增 API Token 自动化脚本：`backend/scripts/setup-content-api-tokens.js`。
+
+### Changed
+
+- `README.md` 从“前端 UI 升级阶段”更新为“工业外贸运营后台一期”真实状态描述。
+- `docs/development.md` 重写为当前有效的开发手册，补齐产品/内容/询盘/统计模块说明。
+- `docs/BACKEND_ACCESS_CONTROL.md` 修正公开接口描述（`/api/global-setting`）并补充询盘确认端点。
+- 导航 Mega Menu 渲染结构调整，修复顶部菜单显示不全/遮挡问题。
+
+### Removed
+
+- 删除 README 中已过期的“本阶段仅前端 UI 升级”表述与无效文档入口指引。
+
+### Notes
+
+- 联系页询盘仍存在“偶发前端失败提示但后台已入库”的残留问题，已增加同源代理与确认补偿机制，后续继续收敛。
+
 ## 2026-05-28
 
 ### Added

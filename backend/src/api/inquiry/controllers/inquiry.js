@@ -10,4 +10,10 @@ module.exports = createCoreController(INQUIRY_UID, ({ strapi }) => ({
     const created = await strapi.service(INQUIRY_UID).submit(payload, ip);
     ctx.body = { data: created };
   },
+
+  async confirm(ctx) {
+    const payload = ctx.request.body?.data || ctx.request.body || {};
+    const exists = await strapi.service(INQUIRY_UID).confirmRecentSubmission(payload);
+    ctx.body = { data: { exists } };
+  },
 }));

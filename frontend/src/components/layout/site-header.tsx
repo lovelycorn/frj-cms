@@ -102,7 +102,7 @@ export function SiteHeader({ brandShortName, brandName, contactPhone, navItems }
                   >
                     {item.label}
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent className="w-[760px] p-6">
+                  <NavigationMenuContent className="max-h-[70vh] overflow-y-auto">
                     <div className="grid gap-6 lg:grid-cols-[1.2fr_2fr]">
                       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-700">Overview</p>

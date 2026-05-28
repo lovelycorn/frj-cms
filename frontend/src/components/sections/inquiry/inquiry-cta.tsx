@@ -8,6 +8,8 @@ interface InquiryCtaSectionProps {
   title: string;
   description: string;
   contact: SiteContact;
+  sourcePage?: string;
+  sourceProductId?: number;
 }
 
 function toWhatsAppHref(phone: string): string {
@@ -15,7 +17,25 @@ function toWhatsAppHref(phone: string): string {
   return `https://wa.me/${digits}`;
 }
 
-export function InquiryCtaSection({ title, description, contact }: InquiryCtaSectionProps) {
+function buildContactHref(sourcePage?: string, sourceProductId?: number): string {
+  if (!sourcePage && typeof sourceProductId !== "number") {
+    return "/contact";
+  }
+
+  const params = new URLSearchParams();
+  if (sourcePage) {
+    params.set("source_page", sourcePage);
+  }
+  if (typeof sourceProductId === "number") {
+    params.set("source_product", String(sourceProductId));
+  }
+
+  return `/contact?${params.toString()}`;
+}
+
+export function InquiryCtaSection({ title, description, contact, sourcePage, sourceProductId }: InquiryCtaSectionProps) {
+  const contactHref = buildContactHref(sourcePage, sourceProductId);
+
   return (
     <Section>
       <Container>
@@ -25,7 +45,7 @@ export function InquiryCtaSection({ title, description, contact }: InquiryCtaSec
             <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-100 sm:text-base">{description}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <LocalizedLink
-                href="/contact"
+                href={contactHref}
                 className="inline-flex h-11 items-center rounded-md bg-white px-5 text-sm font-semibold text-brand-900 transition hover:bg-slate-100"
               >
                 Contact Sales

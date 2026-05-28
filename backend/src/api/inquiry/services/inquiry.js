@@ -71,6 +71,55 @@ module.exports = createCoreService(INQUIRY_UID, ({ strapi }) => ({
     return created;
   },
 
+  async confirmRecentSubmission(payload = {}) {
+    const email = sanitizeString(payload.email, 120);
+    const message = sanitizeString(payload.message);
+    const name = sanitizeString(payload.name, 100);
+
+    if (!email || !message || !name) {
+      return false;
+    }
+
+    const candidates = await strapi.documents(INQUIRY_UID).findMany({
+      filters: {
+        email: {
+          $eq: email,
+        },
+        message: {
+          $eq: message,
+        },
+        name: {
+          $eq: name,
+        },
+      },
+      sort: ["createdAt:desc"],
+      pagination: {
+        page: 1,
+        pageSize: 5,
+      },
+      fields: ["id", "createdAt"],
+    });
+
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      return false;
+    }
+
+    const threshold = Date.now() - 10 * 60 * 1000;
+
+    return candidates.some((item) => {
+      if (!item?.id || !item?.createdAt) {
+        return false;
+      }
+
+      const createdAtMs = new Date(item.createdAt).getTime();
+      if (Number.isNaN(createdAtMs)) {
+        return false;
+      }
+
+      return createdAtMs >= threshold;
+    });
+  },
+
   async updateStatus(documentId, status) {
     if (!ALLOWED_STATUSES.has(status)) {
       throw new Error("Invalid inquiry status");

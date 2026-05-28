@@ -100,6 +100,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         title="Need technical specs or OEM support?"
         description="Our team can provide datasheets, packaging options, and shipping plans quickly."
         contact={site.contact}
+        sourcePage={`/products/${product.slug}`}
+        sourceProductId={product.id}
       />
     </main>
   );

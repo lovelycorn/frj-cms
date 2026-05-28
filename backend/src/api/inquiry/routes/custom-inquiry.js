@@ -8,5 +8,13 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: "POST",
+      path: "/inquiries/confirm",
+      handler: "inquiry.confirm",
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

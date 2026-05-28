@@ -35,6 +35,8 @@ export function ProductCard({ product }: ProductCardProps) {
         <LocalizedLink
           href={`/products/${product.slug}`}
           className="mt-5 inline-flex items-center text-sm font-semibold text-brand-700 transition hover:text-brand-900"
+          data-track-event="product_click"
+          data-track-source-product={String(product.id)}
         >
           View Details
         </LocalizedLink>

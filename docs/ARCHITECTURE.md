@@ -16,9 +16,10 @@ flowchart LR
 
 1. 用户请求先到 Nginx。
 2. 页面请求转发到 Next.js。
-3. Next.js 需要内容时请求 Strapi。
-4. Strapi 从 PostgreSQL 读取结构化数据。
-5. 文件类资源由 Strapi + 上传卷提供。
+3. Next.js 需要内容时请求 Strapi（容器内地址 `STRAPI_URL`）。
+4. 用户提交询盘/事件时，浏览器先访问 Next.js 同源 API，再由 Next.js 转发到 Strapi。
+5. Strapi 从 PostgreSQL 读取或写入结构化数据。
+6. 文件类资源由 Strapi + 上传卷提供。
 
 ## 3. Docker 关系
 
@@ -46,6 +47,7 @@ flowchart LR
 - 暴露 REST API
 - 管理上传资源
 - 提供健康检查 `GET /api/health`
+- 承载询盘状态流转与轻量统计事件落库
 
 ## 6. Next.js 职责
 
@@ -53,6 +55,7 @@ flowchart LR
 - 路由与 SEO
 - 调用 Strapi API 聚合内容
 - 提供健康检查 `GET /api/health`
+- 提供同源业务代理接口（询盘提交/确认、行为事件）
 
 ## 7. PostgreSQL 职责
 

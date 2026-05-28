@@ -19,8 +19,9 @@
 - `GET /api/case-studies` and `GET /api/case-studies/:id`
 - `GET /api/news` and `GET /api/news/:id` (`/api/news-list` also available)
 - `GET /api/faqs` and `GET /api/faqs/:id`
-- `GET /api/global-settings`
+- `GET /api/global-setting`
 - `POST /api/inquiries/submit`
+- `POST /api/inquiries/confirm`
 - `POST /api/analytics/events`
 
 ## 3. Protected endpoints (auth required)
@@ -29,6 +30,8 @@
 - default CRUD routes for `inquiry` and `analytics-event`
 
 `dashboard/overview` no longer uses `auth: false`, so requests need valid Strapi auth (for example API Token).
+
+`/api/inquiries/confirm` is a fallback endpoint used by frontend to verify whether a recent inquiry was already persisted when submit response is uncertain.
 
 ## 4. Analytics ingestion token gate
 
@@ -52,6 +55,17 @@ Create separate Strapi API Tokens in Admin:
 - `analytics-ingest`:
   - Use only when server-side ingestion is needed.
   - Pair with `ANALYTICS_INGEST_TOKEN`.
+
+You can also provision these three tokens automatically:
+
+```bash
+docker compose --env-file .env.development -f docker-compose.dev.yml \
+  exec -T strapi node /app/scripts/setup-content-api-tokens.js
+```
+
+Behavior:
+- Missing token: create and print plaintext secret once.
+- Existing token: update metadata/permissions in place, do not regenerate secret.
 
 ## 6. Role split recommendation (Admin panel)
 

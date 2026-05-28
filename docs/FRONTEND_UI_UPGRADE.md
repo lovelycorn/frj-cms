@@ -1,4 +1,6 @@
-# Frontend UI Upgrade Delivery
+# Frontend UI Upgrade Delivery（历史归档）
+
+> 说明：该文档记录 2026-05-28 的前端 UI 升级交付快照，不代表当前阶段的完整后端与业务状态。
 
 ## 目标与边界
 

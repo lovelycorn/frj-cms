@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { getRequestSiteConfig } from "@/lib/request-context";
+import { TrafficTracker } from "@/src/components/analytics/traffic-tracker";
 import { FloatingInquiry } from "@/src/components/layout/floating-inquiry";
 import { SiteFooter } from "@/src/components/layout/site-footer";
 import { SiteHeader } from "@/src/components/layout/site-header";
@@ -41,6 +43,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={site.htmlLang}>
       <body className={pageShellClasses.site}>
+        <Suspense fallback={null}>
+          <TrafficTracker />
+        </Suspense>
         <div className="site-shell">
           <SiteHeader
             brandShortName={site.brandShortName}

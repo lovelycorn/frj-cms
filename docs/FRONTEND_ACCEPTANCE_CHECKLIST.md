@@ -1,4 +1,6 @@
-# Frontend Acceptance Checklist
+# Frontend Acceptance Checklist（历史归档）
+
+> 说明：该清单是 2026-05-28 的前端阶段性验收记录，当前以 `README.md` 与 `docs/development.md` 为准。
 
 ## Phase Result (2026-05-28)
 

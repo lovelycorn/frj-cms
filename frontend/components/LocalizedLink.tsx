@@ -2,13 +2,12 @@
 
 import Link, { LinkProps } from "next/link";
 import { usePathname } from "next/navigation";
-import { PropsWithChildren } from "react";
+import { AnchorHTMLAttributes, PropsWithChildren } from "react";
 
 import { extractLocaleFromPathname, localizePath } from "@/lib/i18n-routing";
 
-interface LocalizedLinkProps extends Omit<LinkProps, "href"> {
+interface LocalizedLinkProps extends Omit<LinkProps, "href">, Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   href: string;
-  className?: string;
 }
 
 function isExternalHref(href: string): boolean {
