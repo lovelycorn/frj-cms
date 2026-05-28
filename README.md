@@ -55,6 +55,7 @@ scripts/                  # 统一脚本入口
 - 变更记录：[docs/CHANGELOG.md](docs/CHANGELOG.md)
 - 前端升级交付：[docs/FRONTEND_UI_UPGRADE.md](docs/FRONTEND_UI_UPGRADE.md)
 - 前端验收清单：[docs/FRONTEND_ACCEPTANCE_CHECKLIST.md](docs/FRONTEND_ACCEPTANCE_CHECKLIST.md)
+- 后端权限基线：[docs/BACKEND_ACCESS_CONTROL.md](docs/BACKEND_ACCESS_CONTROL.md)
 
 ## License
 

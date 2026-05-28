@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "analytics_events",
+  "info": {
+    "singularName": "analytics-event",
+    "pluralName": "analytics-events",
+    "displayName": "行为事件",
+    "description": "Traffic and behavior event records reserved for lightweight analytics"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "event_name": {
+      "type": "enumeration",
+      "required": true,
+      "enum": ["page_view", "inquiry_submit", "product_click", "download_click"]
+    },
+    "source_page": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "source_product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
+    },
+    "source_inquiry": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::inquiry.inquiry"
+    },
+    "visitor_id": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "session_id": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "utm_params": {
+      "type": "component",
+      "repeatable": false,
+      "component": "tracking.utm-params"
+    },
+    "ip": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "user_agent": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "properties": {
+      "type": "json"
+    },
+    "occurred_at": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

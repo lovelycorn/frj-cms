@@ -85,6 +85,7 @@ frj-cms/
 - `STRAPI_URL`: Next.js 容器内访问 Strapi 地址
 - `POSTGRES_*` / `DATABASE_*`: 数据库配置
 - `APP_KEYS` 等：Strapi 安全密钥
+- `ANALYTICS_INGEST_TOKEN`: 可选，开启后 `/api/analytics/events` 需携带 `x-analytics-ingest-token`
 
 ## 11. 本地开发方式
 

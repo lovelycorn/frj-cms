@@ -4,7 +4,7 @@
   "info": {
     "singularName": "global-setting",
     "pluralName": "global-settings",
-    "displayName": "Global Settings",
+    "displayName": "全局设置",
     "description": "Global site-level settings"
   },
   "options": {
