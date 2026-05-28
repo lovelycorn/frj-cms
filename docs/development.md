@@ -27,7 +27,8 @@ frj-cms/
 
 - `frontend/app/`: 页面与路由（App Router）
 - `frontend/app/api/health/route.ts`: 前端健康检查接口
-- `frontend/components/`: 页面组件
+- `frontend/src/components/`: 新组件体系（`ui/layout/sections/commerce/industry`）
+- `frontend/src/styles/design-system.ts`: 统一 design token 与布局规范
 - `frontend/lib/api.ts`: Strapi 请求封装
 - `frontend/lib/site-config.ts`: 站点配置
 - `frontend/middleware.ts`: i18n 路由处理
@@ -94,8 +95,8 @@ cp .env.development.example .env.development
 
 访问：
 
-- Frontend: `http://localhost:3000`
-- Strapi Admin: `http://localhost:1337/admin`
+- Frontend: 读取 `.env.development` 中 `APP_URL`
+- Strapi Admin: 读取 `.env.development` 中 `STRAPI_PUBLIC_URL` + `/admin`
 
 ## 12. 构建流程
 

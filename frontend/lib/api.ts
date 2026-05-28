@@ -1,4 +1,4 @@
-import { Article, Category, GlobalSettings, Product, StrapiImage } from "@/types";
+import { Article, Category, GlobalSettings, Product, ProductSpecificationItem, StrapiImage } from "@/types";
 
 interface StrapiListResponse<T> {
   data: T[];
@@ -28,6 +28,9 @@ interface RawProduct extends Record<string, unknown> {
   category?: unknown;
   seoTitle?: string;
   seoDescription?: string;
+  specifications?: unknown;
+  specificationTable?: unknown;
+  specs?: unknown;
 }
 
 interface RawArticle extends Record<string, unknown> {
@@ -175,6 +178,82 @@ function parseSeo(input: unknown): { title: string; description: string } | null
   return { title, description };
 }
 
+function parseProductSpecificationItem(input: unknown): ProductSpecificationItem | null {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const labelCandidates = [input.label, input.name, input.key, input.title];
+  const valueCandidates = [input.value, input.content, input.detail, input.description];
+
+  const label = labelCandidates.find(
+    (candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0,
+  );
+  const value = valueCandidates.find(
+    (candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0,
+  );
+
+  if (!label || !value) {
+    return null;
+  }
+
+  return {
+    label: label.trim(),
+    value: value.trim(),
+  };
+}
+
+function parseKeyValueObjectSpecs(input: Record<string, unknown>): ProductSpecificationItem[] {
+  return Object.entries(input)
+    .filter(([key, value]) => {
+      if (["id", "createdAt", "updatedAt", "publishedAt"].includes(key)) {
+        return false;
+      }
+
+      return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+    })
+    .map(([key, value]) => ({
+      label: key,
+      value: String(value),
+    }));
+}
+
+function parseProductSpecifications(input: unknown): ProductSpecificationItem[] {
+  if (!input) {
+    return [];
+  }
+
+  if (typeof input === "string") {
+    try {
+      const parsed = JSON.parse(input) as unknown;
+      return parseProductSpecifications(parsed);
+    } catch {
+      return [];
+    }
+  }
+
+  if (Array.isArray(input)) {
+    return input
+      .map(parseProductSpecificationItem)
+      .filter((item): item is ProductSpecificationItem => item !== null);
+  }
+
+  if (isRecord(input) && Array.isArray(input.data)) {
+    return parseProductSpecifications(input.data);
+  }
+
+  if (isRecord(input)) {
+    const fromItem = parseProductSpecificationItem(input);
+    if (fromItem) {
+      return [fromItem];
+    }
+
+    return parseKeyValueObjectSpecs(input);
+  }
+
+  return [];
+}
+
 async function fetchFromStrapi<T>(path: string): Promise<T> {
   const url = `${getStrapiBaseUrl()}${path}`;
   const response = await fetch(url, {
@@ -205,6 +284,7 @@ function normalizeCategory(item: StrapiEntity<RawCategory>): Category {
 
 function normalizeProduct(item: StrapiEntity<RawProduct>): Product {
   const raw = unwrapEntity(item);
+  const specificationSource = raw.specifications ?? raw.specificationTable ?? raw.specs;
 
   return {
     id: raw.id,
@@ -216,6 +296,7 @@ function normalizeProduct(item: StrapiEntity<RawProduct>): Product {
     category: parseCategory(raw.category),
     seoTitle: typeof raw.seoTitle === "string" ? raw.seoTitle : "",
     seoDescription: typeof raw.seoDescription === "string" ? raw.seoDescription : "",
+    specifications: parseProductSpecifications(specificationSource),
   };
 }
 

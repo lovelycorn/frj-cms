@@ -17,6 +17,11 @@ export interface Category {
   slug: string;
 }
 
+export interface ProductSpecificationItem {
+  label: string;
+  value: string;
+}
+
 export interface Product {
   id: number;
   title: string;
@@ -26,6 +31,7 @@ export interface Product {
   category: Category | null;
   seoTitle: string;
   seoDescription: string;
+  specifications: ProductSpecificationItem[];
 }
 
 export interface Article {
