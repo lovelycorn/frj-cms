@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { trackBehaviorEvent } from "@/lib/analytics";
@@ -40,6 +40,7 @@ export function ContactForm() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const submittingRef = useRef(false);
 
   const sourcePage = useMemo(() => {
     const fromQuery = searchParams.get("source_page");
@@ -64,10 +65,11 @@ export function ContactForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    if (submitState === "submitting") {
+    if (submittingRef.current || submitState === "submitting") {
       return;
     }
 
+    submittingRef.current = true;
     setSubmitState("submitting");
 
     const form = new FormData(event.currentTarget);
@@ -107,6 +109,8 @@ export function ContactForm() {
       );
     } catch {
       setSubmitState("error");
+    } finally {
+      submittingRef.current = false;
     }
   };
 

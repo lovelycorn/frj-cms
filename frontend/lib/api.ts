@@ -103,24 +103,29 @@ async function confirmInquirySubmission(input: SubmitInquiryInput): Promise<bool
     },
   });
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const response = await fetch("/api/inquiries/confirm", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: requestBody,
-    });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      const response = await fetch("/api/inquiries/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+        cache: "no-store",
+      });
 
-    if (response.ok) {
-      const json = (await response.json()) as InquiryConfirmResponse;
-      if (json?.data?.exists === true) {
-        return true;
+      if (response.ok) {
+        const json = (await response.json()) as InquiryConfirmResponse;
+        if (json?.data?.exists === true) {
+          return true;
+        }
       }
+    } catch {
+      // Ignore transient request failure and retry.
     }
 
     await new Promise((resolve) => {
-      setTimeout(resolve, 250);
+      setTimeout(resolve, 300);
     });
   }
 

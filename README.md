@@ -1,75 +1,71 @@
-# FRJ CMS
+# FRJ CMS v0.2 Baseline
 
-面向工业外贸官网 + B2B 商城模板场景的前后端分离工程：Next.js 前台 + Strapi CMS + PostgreSQL，统一由 Docker Compose 驱动。
+工业外贸官网基础工程（Next.js + Strapi + PostgreSQL + Redis），用于可复制部署的内容站点与询盘管理场景。
 
 ## 技术栈
 
-- Next.js 15 + TypeScript + TailwindCSS
-- shadcn/ui 核心组件体系（基于 Radix）
-- Framer Motion（微动画）
-- Strapi v5
-- PostgreSQL 16
-- Docker Compose
+- Frontend: Next.js 15 + TypeScript + TailwindCSS + shadcn/ui
+- Backend: Strapi v5
+- Database: PostgreSQL 16
+- Cache/Infra: Redis 7
+- Runtime/Deploy: Docker Compose
 
-## 当前阶段交付（工业外贸运营后台一期）
+## V0.2 基线范围（2026-05-29）
 
-已完成（2026-05）：
-
-- Strapi 数据模型升级：产品中心、内容中心、询盘中心、轻量统计保留层
-- 产品中心：`Products/Categories/Industries/Downloads/Certificates`
-- 内容中心：`Blog/Case Study/News/FAQ`
-- 询盘中心：`Inquiry`（含状态流转 `new/contacted/quoted/closed`）
-- 轻量统计：`analytics-event` 事件模型 + `dashboard/overview` 汇总接口
-- 前端埋点链路：`page_view / product_click / inquiry_submit`（Strapi + PostHog 可选）
-- 管理端中文展示：Strapi Admin locale 配置为中文
-- 权限基线：运营看板受保护，内容读与运营读写可通过 API Token 分离
-- Docker 编排可用：`docker compose up -d` 可启动 `postgres/strapi/nextjs`
-
-本阶段明确不做：
-
-- AI 插件能力
-- SaaS 与多租户
-- SEO 中心
+- 前后端全链路可运行：页面、内容接口、询盘提交、轻量埋点
+- 询盘提交稳定性修复：
+  - 同源提交代理 `POST /api/inquiries/submit`
+  - 提交确认补偿 `POST /api/inquiries/confirm`
+  - 前端并发提交保护（防多次点击重复提交）
+- Docker 默认入口可用：`docker compose up -d`
+- 开发/生产编排均包含：`postgres + redis + strapi + nextjs`
 
 ## 快速开始（开发）
 
 ```bash
 cp .env.development.example .env.development
-./scripts/dev.sh
+docker compose up -d
 ```
 
-启动后访问地址以 `.env.development` 为准（默认是 `APP_URL`、`STRAPI_PUBLIC_URL`）。
+默认访问：
 
-## 一键部署（生产）
+- Frontend: `http://localhost:3000/en`
+- Strapi Admin: `http://localhost:1337/admin`
+
+## 生产部署
 
 ```bash
 cp .env.production.example .env.production
-# 修改生产密钥后执行
+# 修改所有生产密钥后执行
 ./scripts/deploy-prod.sh
 ```
 
-## 目录结构
+`deploy-prod.sh` 默认包含：预检、`git pull --ff-only`、build、up、容器健康等待、API smoke check。
+
+可选参数：
+
+- `SKIP_GIT_PULL=1 ./scripts/deploy-prod.sh`
+- `SKIP_BUILD=1 ./scripts/deploy-prod.sh`
+- `SMOKE_CHECK=0 ./scripts/deploy-prod.sh`
+- `HEALTH_TIMEOUT=300 ./scripts/deploy-prod.sh`
+
+## 项目结构
 
 ```text
 frontend/                 # Next.js 应用
 backend/                  # Strapi 应用
 deploy/nginx/             # Nginx 配置模板
 docs/                     # 文档
-scripts/                  # 统一脚本入口
+scripts/                  # 运维脚本
 ```
 
 ## 文档入口
 
-- 部署手册：[docs/deployment.md](docs/deployment.md)
-- 开发文档：[docs/development.md](docs/development.md)
-- 架构文档：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- 变更记录：[docs/CHANGELOG.md](docs/CHANGELOG.md)
-- 后端权限基线：[docs/BACKEND_ACCESS_CONTROL.md](docs/BACKEND_ACCESS_CONTROL.md)
-- 历史前端升级文档（归档）：`docs/FRONTEND_UI_UPGRADE.md`、`docs/FRONTEND_ACCEPTANCE_CHECKLIST.md`
-
-## 已知问题（当前）
-
-- 联系页询盘存在“偶发前端失败提示但后台已入库”的残留问题，已增加同源 API 代理与确认补偿机制，仍需继续稳定性收敛。
+- 部署手册: [docs/deployment.md](docs/deployment.md)
+- 开发手册: [docs/development.md](docs/development.md)
+- 架构文档: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 权限基线: [docs/BACKEND_ACCESS_CONTROL.md](docs/BACKEND_ACCESS_CONTROL.md)
+- 变更记录: [docs/CHANGELOG.md](docs/CHANGELOG.md)
 
 ## License
 

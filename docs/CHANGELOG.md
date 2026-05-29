@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.2 (2026-05-29)
+
+### Added
+
+- 默认编排入口 `docker-compose.yml`，支持直接 `docker compose up -d`。
+- 开发/生产编排新增 `redis` 服务（`redis:7-alpine`）。
+- `scripts/deploy-prod.sh` 增强：
+  - 必填生产配置与密钥占位校验
+  - 容器健康等待
+  - Next/Strapi `api/health` smoke check
+  - 可选参数：`SKIP_GIT_PULL`、`SKIP_BUILD`、`SMOKE_CHECK`、`HEALTH_TIMEOUT`
+
+### Changed
+
+- 询盘链路稳定性修复：
+  - `POST /api/inquiries/submit` 增加服务端确认补偿（上游失败但已入库时返回成功）
+  - 联系页提交增加并发锁，防多次点击重复提交
+  - 客户端确认重试增强（次数与无缓存请求）
+- 文档基线重构为 V0.2：
+  - `README.md`
+  - `docs/DEPLOYMENT.md`
+  - `docs/DEVELOPMENT.md`
+  - `docs/ARCHITECTURE.md`
+
+### Removed
+
+- 删除文档中的过期残留描述（旧端口默认值、已修复的询盘失败说明、重复部署步骤）。
+
 ## 2026-05-29
 
 ### Added
