@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import LocalizedLink from "@/components/LocalizedLink";
-import ProductGrid from "@/components/ProductGrid";
 import { getCategories, getProducts } from "@/lib/api";
+import { ProductCategoryTabs } from "@/src/components/commerce/product-category-tabs";
+import { ProductGrid } from "@/src/components/commerce/product-grid";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -39,29 +39,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <h1 className="title-xl">Product Catalog</h1>
       <p className="section-subtitle">Search by category and discover export-ready industrial solutions.</p>
 
-      <div className="mt-8 flex flex-wrap gap-2">
-        <LocalizedLink
-          href="/products"
-          className={`rounded-full border px-3 py-1 text-sm transition ${
-            category ? "border-slate-300 text-slate-700 hover:border-brand-600" : "border-brand-700 bg-brand-700 text-white"
-          }`}
-        >
-          All
-        </LocalizedLink>
-        {categories.map((item) => {
-          const isActive = category?.toLowerCase() === item.slug.toLowerCase();
-          return (
-            <LocalizedLink
-              key={item.id}
-              href={`/products?category=${encodeURIComponent(item.slug)}`}
-              className={`rounded-full border px-3 py-1 text-sm transition ${
-                isActive ? "border-brand-700 bg-brand-700 text-white" : "border-slate-300 text-slate-700 hover:border-brand-600"
-              }`}
-            >
-              {item.name}
-            </LocalizedLink>
-          );
-        })}
+      <div className="mt-8">
+        <ProductCategoryTabs categories={categories} activeCategory={category} />
       </div>
 
       <div className="mt-8">

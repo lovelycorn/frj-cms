@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_tracking_utm_params",
+  "info": {
+    "displayName": "UTM Params",
+    "description": "Campaign attribution metadata"
+  },
+  "attributes": {
+    "utm_source": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "utm_medium": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "utm_campaign": {
+      "type": "string",
+      "maxLength": 150
+    },
+    "utm_term": {
+      "type": "string",
+      "maxLength": 150
+    },
+    "utm_content": {
+      "type": "string",
+      "maxLength": 150
+    }
+  }
+}

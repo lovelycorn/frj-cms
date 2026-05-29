@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "certificates",
+  "info": {
+    "singularName": "certificate",
+    "pluralName": "certificates",
+    "displayName": "证书资质",
+    "description": "Compliance and qualification certificates"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "certificate_file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["files"],
+      "required": true
+    },
+    "issued_at": {
+      "type": "date"
+    },
+    "expired_at": {
+      "type": "date"
+    },
+    "products": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "mappedBy": "certificates"
+    }
+  }
+}

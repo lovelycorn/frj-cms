@@ -4,7 +4,7 @@
   "info": {
     "singularName": "article",
     "pluralName": "articles",
-    "displayName": "Article",
+    "displayName": "通用文章",
     "description": "Knowledge base and blog content"
   },
   "options": {

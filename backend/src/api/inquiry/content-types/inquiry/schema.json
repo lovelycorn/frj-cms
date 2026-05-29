@@ -1,0 +1,69 @@
+{
+  "kind": "collectionType",
+  "collectionName": "inquiries",
+  "info": {
+    "singularName": "inquiry",
+    "pluralName": "inquiries",
+    "displayName": "询盘管理",
+    "description": "Inbound trade inquiries and follow-up statuses"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 100
+    },
+    "company": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "source_page": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "source_product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
+    },
+    "utm_params": {
+      "type": "component",
+      "repeatable": false,
+      "component": "tracking.utm-params"
+    },
+    "ip": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "message": {
+      "type": "text",
+      "required": true,
+      "minLength": 5
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["new", "contacted", "quoted", "closed"],
+      "default": "new",
+      "required": true
+    },
+    "internal_notes": {
+      "type": "text"
+    }
+  }
+}

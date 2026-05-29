@@ -1,4 +1,4 @@
-import { Article, Category, GlobalSettings, Product, StrapiImage } from "@/types";
+import { Article, Category, GlobalSettings, Product, ProductSpecificationItem, StrapiImage } from "@/types";
 
 interface StrapiListResponse<T> {
   data: T[];
@@ -6,6 +6,12 @@ interface StrapiListResponse<T> {
 
 interface StrapiSingleResponse<T> {
   data: T | null;
+}
+
+interface InquiryConfirmResponse {
+  data?: {
+    exists?: boolean;
+  };
 }
 
 type StrapiEntity<T extends Record<string, unknown>> =
@@ -28,6 +34,9 @@ interface RawProduct extends Record<string, unknown> {
   category?: unknown;
   seoTitle?: string;
   seoDescription?: string;
+  specifications?: unknown;
+  specificationTable?: unknown;
+  specs?: unknown;
 }
 
 interface RawArticle extends Record<string, unknown> {
@@ -45,11 +54,82 @@ interface RawGlobalSettings extends Record<string, unknown> {
   socialLinks?: unknown;
 }
 
+export interface InquiryUtmParams {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+}
+
+export interface SubmitInquiryInput {
+  name: string;
+  email: string;
+  message: string;
+  company?: string;
+  phone?: string;
+  country?: string;
+  source_page?: string;
+  source_product?: number;
+  utm_params?: InquiryUtmParams;
+}
+
 const FALLBACK_STRAPI_URL = "http://localhost:1337";
 
 function getStrapiBaseUrl(): string {
   const raw = process.env.STRAPI_URL ?? process.env.NEXT_PUBLIC_API_URL ?? FALLBACK_STRAPI_URL;
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+function sanitizeString(value: unknown, maxLength: number): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  return normalized.slice(0, maxLength);
+}
+
+async function confirmInquirySubmission(input: SubmitInquiryInput): Promise<boolean> {
+  const requestBody = JSON.stringify({
+    data: {
+      name: input.name,
+      email: input.email,
+      message: input.message,
+    },
+  });
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      const response = await fetch("/api/inquiries/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+        cache: "no-store",
+      });
+
+      if (response.ok) {
+        const json = (await response.json()) as InquiryConfirmResponse;
+        if (json?.data?.exists === true) {
+          return true;
+        }
+      }
+    } catch {
+      // Ignore transient request failure and retry.
+    }
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+  }
+
+  return false;
 }
 
 function logApiError(context: string, error: unknown): void {
@@ -175,6 +255,82 @@ function parseSeo(input: unknown): { title: string; description: string } | null
   return { title, description };
 }
 
+function parseProductSpecificationItem(input: unknown): ProductSpecificationItem | null {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const labelCandidates = [input.label, input.name, input.key, input.title];
+  const valueCandidates = [input.value, input.content, input.detail, input.description];
+
+  const label = labelCandidates.find(
+    (candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0,
+  );
+  const value = valueCandidates.find(
+    (candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0,
+  );
+
+  if (!label || !value) {
+    return null;
+  }
+
+  return {
+    label: label.trim(),
+    value: value.trim(),
+  };
+}
+
+function parseKeyValueObjectSpecs(input: Record<string, unknown>): ProductSpecificationItem[] {
+  return Object.entries(input)
+    .filter(([key, value]) => {
+      if (["id", "createdAt", "updatedAt", "publishedAt"].includes(key)) {
+        return false;
+      }
+
+      return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+    })
+    .map(([key, value]) => ({
+      label: key,
+      value: String(value),
+    }));
+}
+
+function parseProductSpecifications(input: unknown): ProductSpecificationItem[] {
+  if (!input) {
+    return [];
+  }
+
+  if (typeof input === "string") {
+    try {
+      const parsed = JSON.parse(input) as unknown;
+      return parseProductSpecifications(parsed);
+    } catch {
+      return [];
+    }
+  }
+
+  if (Array.isArray(input)) {
+    return input
+      .map(parseProductSpecificationItem)
+      .filter((item): item is ProductSpecificationItem => item !== null);
+  }
+
+  if (isRecord(input) && Array.isArray(input.data)) {
+    return parseProductSpecifications(input.data);
+  }
+
+  if (isRecord(input)) {
+    const fromItem = parseProductSpecificationItem(input);
+    if (fromItem) {
+      return [fromItem];
+    }
+
+    return parseKeyValueObjectSpecs(input);
+  }
+
+  return [];
+}
+
 async function fetchFromStrapi<T>(path: string): Promise<T> {
   const url = `${getStrapiBaseUrl()}${path}`;
   const response = await fetch(url, {
@@ -205,6 +361,7 @@ function normalizeCategory(item: StrapiEntity<RawCategory>): Category {
 
 function normalizeProduct(item: StrapiEntity<RawProduct>): Product {
   const raw = unwrapEntity(item);
+  const specificationSource = raw.specifications ?? raw.specificationTable ?? raw.specs;
 
   return {
     id: raw.id,
@@ -216,6 +373,7 @@ function normalizeProduct(item: StrapiEntity<RawProduct>): Product {
     category: parseCategory(raw.category),
     seoTitle: typeof raw.seoTitle === "string" ? raw.seoTitle : "",
     seoDescription: typeof raw.seoDescription === "string" ? raw.seoDescription : "",
+    specifications: parseProductSpecifications(specificationSource),
   };
 }
 
@@ -315,5 +473,46 @@ export async function getGlobalSettings(): Promise<GlobalSettings | null> {
     return normalizeGlobalSettings(response.data);
   } catch {
     return null;
+  }
+}
+
+export async function submitInquiry(input: SubmitInquiryInput): Promise<boolean> {
+  const payload: SubmitInquiryInput = {
+    name: sanitizeString(input.name, 100) || "",
+    email: sanitizeString(input.email, 120) || "",
+    message: sanitizeString(input.message, 2000) || "",
+    company: sanitizeString(input.company, 120),
+    phone: sanitizeString(input.phone, 50),
+    country: sanitizeString(input.country, 80),
+    source_page: sanitizeString(input.source_page, 255),
+    source_product: typeof input.source_product === "number" ? input.source_product : undefined,
+    utm_params: input.utm_params,
+  };
+
+  if (!payload.name || !payload.email || !payload.message) {
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/inquiries/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: payload }),
+    });
+
+    if (response.ok) {
+      return true;
+    }
+  } catch (error) {
+    logApiError("submitInquiry", error);
+  }
+
+  try {
+    return await confirmInquirySubmission(payload);
+  } catch (error) {
+    logApiError("confirmInquirySubmission", error);
+    return false;
   }
 }

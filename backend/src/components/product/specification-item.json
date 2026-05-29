@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_product_specification_items",
+  "info": {
+    "displayName": "Specification Item",
+    "description": "Key-value product specification row"
+  },
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "value": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "unit": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "sort_order": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

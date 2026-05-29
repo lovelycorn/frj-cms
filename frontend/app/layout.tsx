@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
 import { getRequestSiteConfig } from "@/lib/request-context";
+import { TrafficTracker } from "@/src/components/analytics/traffic-tracker";
+import { FloatingInquiry } from "@/src/components/layout/floating-inquiry";
+import { SiteFooter } from "@/src/components/layout/site-footer";
+import { SiteHeader } from "@/src/components/layout/site-header";
+import { pageShellClasses } from "@/src/styles/design-system";
 
 import "./globals.css";
 
@@ -38,21 +42,26 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang={site.htmlLang}>
-      <body>
+      <body className={pageShellClasses.site}>
+        <Suspense fallback={null}>
+          <TrafficTracker />
+        </Suspense>
         <div className="site-shell">
-          <Header
+          <SiteHeader
             brandShortName={site.brandShortName}
             brandName={site.brandName}
+            contactPhone={site.contact.phone}
             navItems={site.navigation}
           />
-          <div className="content-shell">{children}</div>
-          <Footer
+          <div className={pageShellClasses.content}>{children}</div>
+          <SiteFooter
             companyName={site.companyName}
             footerDescription={site.footerDescription}
             contact={site.contact}
             serviceArea={site.serviceArea}
             navItems={site.navigation}
           />
+          <FloatingInquiry contact={site.contact} />
         </div>
       </body>
     </html>

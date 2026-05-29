@@ -34,6 +34,23 @@ services:
           - postgres
           - db
 
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    init: true
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    logging: *default_logging
+    networks:
+      frj_network:
+        aliases:
+          - redis
+
   strapi-prod:
     build:
       context: ./backend
