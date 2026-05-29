@@ -52,7 +52,9 @@ require_secret_env_key() {
   local val
   val="$(load_env_value "${key}" || true)"
   [[ -n "${val}" ]] || fail "Required secret key is missing or empty: ${key}"
-  [[ "${val}" == *"changeMe"* ]] && fail "Secret key still uses placeholder value: ${key}"
+  if [[ "${val}" == *"changeMe"* ]]; then
+    fail "Secret key still uses placeholder value: ${key}"
+  fi
 }
 
 load_env_value() {
