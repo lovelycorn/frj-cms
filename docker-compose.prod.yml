@@ -112,6 +112,8 @@ services:
       - .env.production
     environment:
       NODE_ENV: production
+      HOSTNAME: ${NEXT_HOSTNAME:-0.0.0.0}
+      PORT: ${NEXT_INTERNAL_PORT:-3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       STRAPI_URL: ${STRAPI_URL:-http://strapi-prod:1337}
       APP_URL: ${APP_URL}
